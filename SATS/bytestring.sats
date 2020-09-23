@@ -78,8 +78,19 @@ fn
   [cap:nat | cap >= n]
   Bytestring(n,cap)
 
+fn
+  pack_bytes
+  {n:nat}{l:agz}
+  ( !array_v( char, l, n)
+  | i: ptr l
+  , sz: size_t n
+  ):
+  [cap: nat | cap >= n]
+  Bytestring( n, cap)
+
 symintr pack
 overload pack with pack_string
+overload pack with pack_bytes
 
 fn
   is_empty

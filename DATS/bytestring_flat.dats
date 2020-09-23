@@ -123,6 +123,19 @@ in
       $UN.castvwtp0{Bytestring(n,n)} ( ( (t_pf, t_fpf, pf, fpf) | (sz, i2sz(0), sz, p)) )
     end
 end
+
+implement pack_bytes{n}{l}(i_pf | i, sz) =
+if sz = 0
+then empty()
+else
+  let
+    val (pf, fpf | ptr) = array_ptr_alloc<char>(sz)
+    val () = memcpy( pf, i_pf | ptr, i, sz)
+    val (t_pf, t_fpf | p) = ptr_alloc<(size_t, size_t, ptr)>()
+    val () = !p := (sz, i2sz(0), ptr)
+  in
+    $UN.castvwtp0{Bytestring(n,n)} ( ( (t_pf, t_fpf, pf, fpf) | (sz, i2sz(0), sz, p)) )
+  end
   
 implement free{n,cap}(v) =
 let
