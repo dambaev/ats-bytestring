@@ -4,7 +4,7 @@
 #define ATS_DYNLOADFLAG 0
 #define ATS_EXTERN_PREFIX "bytestring"
 
-staload "SATS/bytestring.sats"
+staload "./../SATS/bytestring.sats"
 staload UN = "prelude/SATS/unsafe.sats"
 //staload "prelude/SATS/array.sats"
 
