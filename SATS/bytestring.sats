@@ -2,24 +2,28 @@
 *)
 
 (* abstract viewtype, that describes Bytestring with capacity and size *)
-absvt0ype Bytestring(n:int, cap: int) = ( void | (size_t, size_t, size_t, ptr))
+absvt0ype Bytestring_vtype(n:int, cap: int) = ( void | (size_t, size_t, size_t, ptr))
+
+vtypedef Bytestring(n:int) =
+  [cap:nat | cap >= n]
+  Bytestring_vtype( n, cap)
 
 (* bytestring, that can be empty *)
 vtypedef
   Bytestring0 =
-  [n,cap: nat | n >= 0]
-  Bytestring(n,cap)
+  [n: nat | n >= 0]
+  Bytestring(n)
 
 (* non-empty bytestring *)
 vtypedef
   Bytestring1 =
-  [n,cap: pos | n <= cap]
-  Bytestring( n, cap)
+  [n: pos]
+  Bytestring( n)
 
 prfun
   lemma_bytestring_param
   {n,cap:nat}
-  ( v: !Bytestring(n, cap)
+  ( v: !Bytestring_vtype(n, cap)
   ):
   [ n <= cap ] (* n should not exceed capacity *)
   void
@@ -29,35 +33,33 @@ fn
   empty
   (
   ):<>
-  Bytestring(0,0)
+  Bytestring_vtype(0,0)
 
 (* creates new bytestring with content of r appended to l. does not consumes l and r *)
 fn
   append
-  {l_n, r_n, l_cap, r_cap: nat}
-  ( l: !Bytestring(l_n, l_cap)
-  , r: !Bytestring(r_n, r_cap)
+  {l_n, r_n: nat}
+  ( l: !Bytestring(l_n)
+  , r: !Bytestring(r_n)
   ):
-  [res_cap: nat | res_cap >= l_n + r_n]
-  Bytestring( l_n+r_n, res_cap)
+  Bytestring( l_n+r_n)
 
 (* the same as append, but consumes arguments in order to make caller's code clear from bunch of val's and free()
  *)
 fn
   appendC
-  {l_n, r_n, l_cap, r_cap: nat}
-  ( l: Bytestring(l_n, l_cap)
-  , r: Bytestring(r_n, r_cap)
+  {l_n, r_n: nat}
+  ( l: Bytestring(l_n)
+  , r: Bytestring(r_n)
   ):
-  [res_cap: nat | res_cap >= l_n + r_n]
-  Bytestring( l_n+r_n, res_cap)
+  Bytestring( l_n+r_n)
 
 overload + with appendC
 (* frees bytestring *)
 fn
   free
-  {n,cap: nat | cap >= n}
-  ( v: Bytestring(n,cap)
+  {n: nat}
+  ( v: Bytestring(n)
   ): void
  
 (* creates uninitialized bytestring with given capacity *) 
@@ -66,7 +68,7 @@ fn
   {cap: pos}
   ( capacity: size_t(cap)
   ):
-  Bytestring(0, cap)
+  Bytestring_vtype(0, cap)
 
 
 (* TODO: this should not allocate *)
@@ -75,8 +77,7 @@ fn
   {n:nat}
   ( s: string(n)
   ):
-  [cap:nat | cap >= n]
-  Bytestring(n,cap)
+  Bytestring(n)
 
 fn
   pack_bytes
@@ -85,8 +86,7 @@ fn
   | i: ptr l
   , sz: size_t n
   ):
-  [cap: nat | cap >= n]
-  Bytestring( n, cap)
+  Bytestring( n)
 
 symintr pack
 overload pack with pack_string
@@ -94,22 +94,22 @@ overload pack with pack_bytes
 
 fn
   is_empty
-  {n, cap: nat | cap >= n}
-  ( i: !Bytestring(n, cap)
+  {n: nat}
+  ( i: !Bytestring(n)
   ):<>
   bool (n==0)
 fn
   isnot_empty
-  {n, cap: nat | cap >= n}
-  ( i: !Bytestring(n, cap)
+  {n: nat}
+  ( i: !Bytestring(n)
   ):<>
   bool( n > 0)
 
 fn
   eq_bytestring_bytestring
-  {l_n, r_n, l_cap, r_cap: nat}
-  ( l: !Bytestring( l_n, l_cap)
-  , r: !Bytestring( r_n, r_cap)
+  {l_n, r_n: nat}
+  ( l: !Bytestring( l_n)
+  , r: !Bytestring( r_n)
   ):<>
   [r: bool | (l_n == r_n && r ) || (l_n != r_n || r == false)]
   bool(r)
@@ -118,9 +118,9 @@ overload = with eq_bytestring_bytestring
 
 fn
   neq_bytestring_bytestring
-  {l_n, r_n, l_cap, r_cap: nat}
-  ( l: !Bytestring( l_n, l_cap)
-  , r: !Bytestring( r_n, r_cap)
+  {l_n, r_n: nat}
+  ( l: !Bytestring( l_n)
+  , r: !Bytestring( r_n)
   ):<> bool
 
 overload <> with neq_bytestring_bytestring
@@ -128,98 +128,97 @@ overload != with neq_bytestring_bytestring
 
 fn
   ref_bs
-  {n, cap: nat | cap >= n}
-  ( i: !Bytestring(n,cap)
-  ):<!wrt> Bytestring(n,cap)
+  {n: nat}
+  ( i: !Bytestring(n)
+  ):<!wrt> Bytestring(n)
 
 fn
   copy
-  {n,cap: nat | cap >= n}
-  ( i: !Bytestring(n,cap)
+  {n: nat}
+  ( i: !Bytestring(n)
   ):
-  [ cap1: nat | cap1 >= n]
-  Bytestring( n, cap1)
+  Bytestring( n)
 
 fn
   capacity
-  {n, cap: nat | cap >= n}
-  ( i: !Bytestring(n,cap)
+  {n,cap: nat | cap >= n}
+  ( i: !Bytestring_vtype(n,cap)
   ):<> size_t(cap)
 
 fn
   is_empty_capacity
   {n,cap:nat | cap >= n}
-  ( i: !Bytestring(n,cap)
+  ( i: !Bytestring_vtype(n,cap)
   ):<> bool(cap == 0)
 fn
   isnot_empty_capacity
   {n,cap:nat | cap >= n}
-  ( i: !Bytestring(n,cap)
+  ( i: !Bytestring_vtype(n,cap)
   ):<> bool(cap > 0)
 
 fn
   unused_capacity
   {len, capacity: nat | capacity >= len}
-  ( i: !Bytestring(len, capacity)
+  ( i: !Bytestring_vtype(len, capacity)
   ):<>
   [unused_capacity: nat | unused_capacity < capacity]
   size_t(unused_capacity)
 
 fn
   length_bs
-  {n, cap: nat | cap >= n}
-  ( i: !Bytestring(n,cap)
+  {n: nat}
+  ( i: !Bytestring(n)
   ):<> size_t(n)
 overload length with length_bs
 
 fn
   bs2ptr
   {n,cap: nat | cap > 0}
-  ( i: !Bytestring(n,cap)
+  ( i: !Bytestring_vtype(n,cap)
   ): [l:agz] ptr l
 
 fn
   drop
-  {i,n,cap: nat | n <= i }
+  {i,n: nat | n <= i }
   ( n: size_t n
-  , i: !Bytestring(i,cap)
+  , i: !Bytestring(i)
   ):<!wrt>
   [ newn: nat | (i == 0 && newn == 0) || (i > 0 && newn == i - n)]
-  Bytestring( newn, cap)
+  Bytestring( newn)
 fn
   dropC
-  {i,n,cap: nat | n <= i }
+  {i,n: nat | n <= i }
   ( n: size_t n
-  , i: Bytestring(i,cap)
+  , i: Bytestring(i)
   ):<!wrt>
   [ newn: nat | (i == 0 && newn == 0) || (i > 0 && newn == i - n)]
-  Bytestring( newn, cap)
+  Bytestring( newn)
 
 fn
   take
-  {i,n,cap: nat | n <= i}
+  {i,n: nat | n <= i}
   ( n: size_t n
-  , i: !Bytestring(i, cap)
+  , i: !Bytestring(i)
   ):<!wrt>
   [newn: nat | (i == 0 && newn == 0) || (i > 0 && newn == n) ]
-  Bytestring( newn, cap)
+  Bytestring( newn)
 
 fn
   takeC
-  {i,n,cap: nat | n <= i}
+  {i,n: nat | n <= i}
   ( n: size_t n
-  , i: Bytestring(i, cap)
+  , i: Bytestring(i)
   ):<!wrt>
   [newn: nat | (i == 0 && newn == 0) || (i > 0 && newn == n) ]
-  Bytestring( newn, cap)
+  Bytestring( newn)
 
 fn
   println
-  {n,cap: nat | n > 0}
-  ( i: !Bytestring(n,cap)
+  {n: pos}
+  ( i: !Bytestring(n)
   ): void
 fn
   printlnC
-  {n,cap: nat | n > 0}
-  ( i: Bytestring(n,cap)
+  {n: pos}
+  ( i: Bytestring(n)
   ): void
