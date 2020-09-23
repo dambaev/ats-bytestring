@@ -173,9 +173,11 @@ overload length with length_bs
 
 fn
   bs2ptr
-  {n,cap: nat | cap > 0}
-  ( i: !Bytestring_vtype(n,cap)
-  ): [l:agz] ptr l
+  {n: nat}
+  ( i: !Bytestring(n)
+  ):
+  [l:addr]
+  ptr l
 
 fn
   drop
