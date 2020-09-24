@@ -1,5 +1,7 @@
 (* This library is an analogue to Haskell's ByteString library
 *)
+#define ATS_PACKNAME "bytestring"
+#define ATS_EXTERN_PREFIX "bytestring_"
 
 (* abstract viewtype, that describes Bytestring with capacity and size *)
 absvt0ype Bytestring(n:int, cap: int) = ( void | (size_t, size_t, size_t, ptr))
@@ -85,8 +87,7 @@ fn
   | i: ptr l
   , sz: size_t n
   ):
-  [cap: nat | cap >= n]
-  Bytestring( n, cap)
+  Bytestring( n, n)
 
 symintr pack
 overload pack with pack_string
