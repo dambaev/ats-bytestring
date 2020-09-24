@@ -197,20 +197,20 @@ fn
 
 fn
   take
-  {i,n,cap: nat | n <= i}
+  {i,n,cap: nat}
   ( n: size_t n
   , i: !Bytestring(i, cap)
   ):<!wrt>
-  [newn: nat | (i == 0 && newn == 0) || (i > 0 && newn == n) ]
+  [newn: nat | (n > i && newn == i) || (newn == n) ]
   Bytestring( newn, cap)
 
 fn
   takeC
-  {i,n,cap: nat | n <= i}
+  {i,n,cap: nat}
   ( n: size_t n
   , i: Bytestring(i, cap)
   ):<!wrt>
-  [newn: nat | (i == 0 && newn == 0) || (i > 0 && newn == n) ]
+  [newn: nat | (n > i && newn == i) || (newn == n) ]
   Bytestring( newn, cap)
 
 fn
