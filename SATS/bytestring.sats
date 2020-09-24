@@ -138,8 +138,7 @@ fn
   {n,cap: nat | cap >= n}
   ( i: !Bytestring(n,cap)
   ):
-  [ cap1: nat | cap1 >= n]
-  Bytestring( n, cap1)
+  Bytestring( n, cap)
 
 fn
   capacity
