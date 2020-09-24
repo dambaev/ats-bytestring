@@ -56,7 +56,7 @@ overload + with appendC
 (* frees bytestring *)
 fn
   free
-  {n,cap: nat | cap >= n}
+  {n,cap: nat}
   ( v: Bytestring(n,cap)
   ): void
  
