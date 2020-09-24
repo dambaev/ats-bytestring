@@ -38,7 +38,7 @@ dataview result_vb(c:bool, a:view+,b: view+) =
 extern castfn
   bs_takeout_struct
   {a:viewt0ype}{n,cap:nat}
-  ( bs: !Bytestring_vtype(n,cap) >> Bs_minus_struct( n, offset, cap, l)
+  ( bs: !Bytestring(n,cap) >> Bs_minus_struct( n, offset, cap, l)
   ):<>
   #[l,l1:addr]
   #[offset: nat]
@@ -50,13 +50,13 @@ extern praxi
   bs_takeback_struct
   {a:viewt0ype}{n,offset,cap: nat}{l,l1:addr}
   ( result_vb( cap > 0, void, ( (size_t, size_t, ptr l1) @ l, mfree_gc_v l, array_v(char, l1, cap), mfree_gc_v l1))
-  | bs: !Bs_minus_struct( n, offset, cap, l) >> Bytestring_vtype( n, cap)
+  | bs: !Bs_minus_struct( n, offset, cap, l) >> Bytestring( n, cap)
   ):<> void
 
 implement empty() =
 let
 in
-  $UN.castvwtp0{Bytestring_vtype(0,0)} ( ( () | (i2sz(0), i2sz(0), i2sz(0), the_null_ptr)) )
+  $UN.castvwtp0{Bytestring(0,0)} ( ( () | (i2sz(0), i2sz(0), i2sz(0), the_null_ptr)) )
 end
 
 extern fn
@@ -120,7 +120,7 @@ in
       val (t_pf, t_fpf | p) = ptr_alloc<(size_t, size_t, ptr)>()
       val () = !p := (sz, i2sz(0), ptr)
     in
-      $UN.castvwtp0{Bytestring_vtype(n,n)} ( ( (t_pf, t_fpf, pf, fpf) | (sz, i2sz(0), sz, p)) )
+      $UN.castvwtp0{Bytestring(n,n)} ( ( (t_pf, t_fpf, pf, fpf) | (sz, i2sz(0), sz, p)) )
     end
 end
 
@@ -134,10 +134,10 @@ else
     val (t_pf, t_fpf | p) = ptr_alloc<(size_t, size_t, ptr)>()
     val () = !p := (sz, i2sz(0), ptr)
   in
-    $UN.castvwtp0{Bytestring_vtype(n,n)} ( ( (t_pf, t_fpf, pf, fpf) | (sz, i2sz(0), sz, p)) )
+    $UN.castvwtp0{Bytestring(n,n)} ( ( (t_pf, t_fpf, pf, fpf) | (sz, i2sz(0), sz, p)) )
   end
   
-implement free{n}(v) =
+implement free{n,cap}(v) =
 let
   prval () = lemma_bytestring_param(v)
   val ( rpf | impl) = bs_takeout_struct(v)
@@ -182,10 +182,10 @@ let
   val ( t_pf, t_fpf | ptr) = ptr_alloc<(size_t, size_t, ptr)>()
   val () = !ptr := (i2sz(0), i2sz(0), p)
 in
-  $UN.castvwtp0 {Bytestring_vtype(0,cap)} (( (t_pf, t_fpf, pf, fpf) | (i2sz(0), i2sz 0, sz, ptr) ))
+  $UN.castvwtp0 {Bytestring(0,cap)} (( (t_pf, t_fpf, pf, fpf) | (i2sz(0), i2sz 0, sz, ptr) ))
 end
 
-implement eq_bytestring_bytestring{l_n,r_n} ( l, r) =
+implement eq_bytestring_bytestring{l_n,r_n,l_cap,r_cap} ( l, r) =
 let
   prval () = lemma_bytestring_param( l)
   prval () = lemma_bytestring_param( r)
@@ -236,7 +236,7 @@ prfun
   ( i: !v
   ):<> v
 
-implement append{l_n, r_n}(l, r) =
+implement append{l_n, r_n, l_cap, r_cap}(l, r) =
 let
   prval () = lemma_bytestring_param( l)
   prval () = lemma_bytestring_param( r)
@@ -286,7 +286,7 @@ in
         val () = free( result1)
       }
       | _ => (* just use available space *)
-        $UN.castvwtp0{Bytestring(l_n+r_n)}(( () | (ln + rn, loffset, lcap, lt ))) where {
+        $UN.castvwtp0{Bytestring(l_n+r_n,l_cap)}(( () | (ln + rn, loffset, lcap, lt ))) where {
           prval (l_pf1, l_pf2) = array_v_split_at( l_pf | lunused_offset)
           prval (r_pf1, r_pf2) = array_v_split_at( r_pf | roffset)
           val ldata = ptr_add( lp, lunused_offset)
@@ -316,7 +316,7 @@ end
 
 implement isnot_empty_capacity(v) = not( is_empty_capacity(v))
 
-implement is_empty{n}(v) = let
+implement is_empty{n,cap}(v) = let
   prval () = lemma_bytestring_param(v)
   val ( rpf | impl) = bs_takeout_struct(v)
   prval () = lemma_bytestring_impl_param( impl)
@@ -330,10 +330,10 @@ end
 
 implement isnot_empty(v) = not( is_empty(v))
 
-implement ref_bs{n}(i) =
+implement ref_bs{n,cap}(i) =
 if is_empty_capacity i
 then empty()
-else $UN.castvwtp0{Bytestring(n)}((( () | impl))) where {
+else $UN.castvwtp0{Bytestring(n,cap)}((( () | impl))) where {
   prval () = lemma_bytestring_param(i)
   val ( rpf | impl ) = bs_takeout_struct( i)
   prval succ_vb( pf) = rpf
@@ -366,7 +366,7 @@ implement bs2ptr(i) = ret where {
   val () = assertloc( ptr_isnot_null ret)
 }
   
-implement drop{i,n}(n, i) =
+implement drop{i,n,cap}(n, i) =
 let
   prval () = lemma_bytestring_param(i)
   val ( rpf | impl) = bs_takeout_struct(i)
@@ -382,13 +382,13 @@ in
     prval (t_pf, t_fpf, b_pf, b_fpf) = pf
     val (unused_offset, refcnt, p) = !tuple
     val () = !tuple := (unused_offset, refcnt + 1, p)
-    val result = $UN.castvwtp0{Bytestring(i-n)} (( () | (len-n, offset+n, cap, tuple) )) (* TODO: we are cheating here by providing void proof, ideally we should clone view, but this looks like cheating as well, just more verbose *)
+    val result = $UN.castvwtp0{Bytestring(i-n, cap)} (( () | (len-n, offset+n, cap, tuple) )) (* TODO: we are cheating here by providing void proof, ideally we should clone view, but this looks like cheating as well, just more verbose *)
     prval () = rpf := succ_vb( (t_pf, t_fpf, b_pf, b_fpf))
     prval () = bs_takeback_struct( rpf | i)
   }
 end
 
-implement dropC{i,n}(n, i) =
+implement dropC{i,n,cap}(n, i) =
 let
   prval () = lemma_bytestring_param(i)
   val ( rpf | impl) = bs_takeout_struct(i)
@@ -404,7 +404,7 @@ in
     prval (t_pf, t_fpf, b_pf, b_fpf) = pf
     val (unused_offset, refcnt, p) = !tuple
     val () = !tuple := (unused_offset, refcnt + 1, p)
-    val result = $UN.castvwtp0{Bytestring(i-n)} (( () | (len-n, offset+n, cap, tuple) )) (* TODO: we are cheating here by providing void proof, ideally we should clone view, but this looks like cheating as well, just more verbose *)
+    val result = $UN.castvwtp0{Bytestring(i-n, cap)} (( () | (len-n, offset+n, cap, tuple) )) (* TODO: we are cheating here by providing void proof, ideally we should clone view, but this looks like cheating as well, just more verbose *)
     prval () = rpf := succ_vb( (t_pf, t_fpf, b_pf, b_fpf))
     prval () = bs_takeback_struct( rpf | i)
     extern castfn _free{vt:viewt0ype+}( i: vt):<> void
@@ -412,7 +412,7 @@ in
   }
 end
 
-implement take{i,n}(n, i) =
+implement take{i,n,cap}(n, i) =
 let
   prval () = lemma_bytestring_param(i)
   val ( rpf | impl) = bs_takeout_struct(i)
@@ -428,13 +428,13 @@ in
     prval (t_pf, t_fpf, b_pf, b_fpf) = pf
     val (unused_offset, refcnt, p) = !tuple
     val () = !tuple := (unused_offset, refcnt + 1, p)
-    val result = $UN.castvwtp0{Bytestring(n)} (( () | (n, offset, cap, tuple) )) (* TODO: we are cheating here by providing void proof, ideally we should clone view, but this looks like cheating as well, just more verbose *)
+    val result = $UN.castvwtp0{Bytestring(n, cap)} (( () | (n, offset, cap, tuple) )) (* TODO: we are cheating here by providing void proof, ideally we should clone view, but this looks like cheating as well, just more verbose *)
     prval () = rpf := succ_vb( (t_pf, t_fpf, b_pf, b_fpf))
     prval () = bs_takeback_struct( rpf | i)
   }
 end
 
-implement takeC{i,n}(n, i) =
+implement takeC{i,n,cap}(n, i) =
 let
   prval () = lemma_bytestring_param(i)
   val ( rpf | impl) = bs_takeout_struct(i)
@@ -450,7 +450,7 @@ in
     prval (t_pf, t_fpf, b_pf, b_fpf) = pf
     val (unused_offset, refcnt, p) = !tuple
     val () = !tuple := (unused_offset, refcnt + 1, p)
-    val result = $UN.castvwtp0{Bytestring(n)} (( () | (n, offset, cap, tuple) )) (* TODO: we are cheating here by providing void proof, ideally we should clone view, but this looks like cheating as well, just more verbose *)
+    val result = $UN.castvwtp0{Bytestring(n, cap)} (( () | (n, offset, cap, tuple) )) (* TODO: we are cheating here by providing void proof, ideally we should clone view, but this looks like cheating as well, just more verbose *)
     prval () = rpf := succ_vb( (t_pf, t_fpf, b_pf, b_fpf))
     prval () = bs_takeback_struct( rpf | i)
     extern castfn _free{vt:viewt0ype+}( i: vt):<> void
