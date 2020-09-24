@@ -177,6 +177,11 @@ fn
   {n,cap: nat | cap > 0}
   ( i: !Bytestring(n,cap)
   ): [l:agz] ptr l
+fn
+  bs2string
+  {n,cap: nat | cap > 0}
+  ( i: !Bytestring(n,cap)
+  ): string(n)
 
 fn
   drop

@@ -375,6 +375,20 @@ implement bs2ptr(i) = ret where {
   prval () = bs_takeback_struct( rpf | i)
   val () = assertloc( ptr_isnot_null ret)
 }
+
+implement bs2string{n,cap}(i) = ret where {
+  prval () = lemma_bytestring_param(i)
+  val (rpf | impl) = bs_takeout_struct(i)
+  val (_, offset, _, tuple) = impl
+  prval succ_vb( pf) = rpf
+  prval (tuple_pf, t_fpf, pf, fpf) = pf
+  val (unused_offset, recfnt, p) = !tuple
+  extern castfn believeme{l:addr}( i: ptr l): string(n)
+  val ret = believeme(p)
+  prval () = rpf := succ_vb( (tuple_pf, t_fpf, pf, fpf))
+  
+  prval () = bs_takeback_struct( rpf | i)
+}
   
 implement drop{i,n,cap}(n, i) =
 let
