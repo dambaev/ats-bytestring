@@ -451,7 +451,7 @@ let
   prval () = lemma_bytestring_impl_param(impl)
   val (len, offset, cap, tuple) = impl
 in
-  if len = 0
+  if n >= len
   then i where {
     prval () = bs_takeback_struct( rpf | i)
   }
