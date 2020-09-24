@@ -302,6 +302,16 @@ in
     end
 end
 
+implement length_bs{n,cap}(v) = let
+  prval () = lemma_bytestring_param(v)
+  val ( rpf | impl) = bs_takeout_struct(v)
+  prval () = lemma_bytestring_impl_param( impl)
+  val (ret, _, _, _) = impl
+  prval () = bs_takeback_struct( rpf | v)
+in
+  ret
+end
+
 implement capacity{n,cap}(v) = let
   prval () = lemma_bytestring_param(v)
   val ( rpf | impl) = bs_takeout_struct(v)
