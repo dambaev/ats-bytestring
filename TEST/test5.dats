@@ -10,6 +10,11 @@ implement main0() = {
   val s1 = $BS.pack ( view@arr | addr@arr, i2sz(5))
   val s2 = $BS.pack "hello"
   val () = assertloc( s1 =  s2)
-  val () = $BS.free(s1)
+  val s3 = $BS.takeC( i2sz(5), s1)
+  val () = assertloc( s3 =  s2)
+  val s4 = $BS.takeC( i2sz(1), s3)
+  val s5 = $BS.pack "h"
   val () = $BS.free(s2)
+  val () = $BS.free(s4)
+  val () = $BS.free(s5)
 }
