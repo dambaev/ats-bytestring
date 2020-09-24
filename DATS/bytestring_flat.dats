@@ -459,7 +459,7 @@ in
     prval succ_vb( pf) = rpf
     prval (t_pf, t_fpf, b_pf, b_fpf) = pf
     val (unused_offset, refcnt, p) = !tuple
-    val () = !tuple := (unused_offset, refcnt + 1, p)
+    val () = !tuple := (unused_offset, refcnt, p)
     val result = $UN.castvwtp0{Bytestring(n, cap)} (( () | (n, offset, cap, tuple) )) (* TODO: we are cheating here by providing void proof, ideally we should clone view, but this looks like cheating as well, just more verbose *)
     prval () = rpf := succ_vb( (t_pf, t_fpf, b_pf, b_fpf))
     prval () = bs_takeback_struct( rpf | i)
