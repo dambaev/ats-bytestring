@@ -1,8 +1,8 @@
 #include "share/atspre_staload.hats"
-#define ATS_PACKNAME "bytestring_flag"
 
 #define ATS_DYNLOADFLAG 0
-#define ATS_EXTERN_PREFIX "bytestring"
+#define ATS_PACKNAME "bytestring"
+#define ATS_EXTERN_PREFIX "bytestring_"
 
 staload "./../SATS/bytestring.sats"
 staload UN = "prelude/SATS/unsafe.sats"
@@ -302,6 +302,16 @@ in
     end
 end
 
+implement capacity{n,cap}(v) = let
+  prval () = lemma_bytestring_param(v)
+  val ( rpf | impl) = bs_takeout_struct(v)
+  prval () = lemma_bytestring_impl_param( impl)
+  val (_, _, cap, _) = impl
+  prval () = bs_takeback_struct( rpf | v)
+in
+  cap
+end
+
 implement is_empty_capacity{n,cap}(v) = let
   prval () = lemma_bytestring_param(v)
   val ( rpf | impl) = bs_takeout_struct(v)
@@ -477,3 +487,4 @@ implement printlnC(i) = {
   val () = println(i)
   val () = free( i)
 }
+  
