@@ -352,26 +352,19 @@ implement appendC(l,r) = result where {
   val () = free( r)
 }
 
-implement bs2ptr(i) =
-let
+implement bs2ptr(i) = ret where {
   prval () = lemma_bytestring_param(i)
   val (rpf | impl) = bs_takeout_struct(i)
-  val (_, offset, cap, tuple) = impl
-in
-  if cap = 0
-  then the_null_ptr where {
-    prval () = bs_takeback_struct( rpf | i)
-  }
-  else ret where {
-    prval succ_vb( pf) = rpf
-    prval (tuple_pf, t_fpf, pf, fpf) = pf
-    val (unused_offset, recfnt, p) = !tuple
-    val ret = ptr_add<char>( p, offset)
-    prval () = rpf := succ_vb( (tuple_pf, t_fpf, pf, fpf))
-
-    prval () = bs_takeback_struct( rpf | i)
-  }
-end
+  val (_, offset, _, tuple) = impl
+  prval succ_vb( pf) = rpf
+  prval (tuple_pf, t_fpf, pf, fpf) = pf
+  val (unused_offset, recfnt, p) = !tuple
+  val ret = ptr_add<char>( p, offset)
+  prval () = rpf := succ_vb( (tuple_pf, t_fpf, pf, fpf))
+  
+  prval () = bs_takeback_struct( rpf | i)
+  val () = assertloc( ptr_isnot_null ret)
+}
   
 implement drop{i,n}(n, i) =
 let
