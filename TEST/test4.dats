@@ -19,9 +19,13 @@ implement main0() = {
   val r6 = $BS.take( i2sz(4), r2)
   val () = assertloc( r5 = r6)
   val () = $BS.printlnC( $BS.pack "r2 = " + r2)
+  val r7 = $BS.takeC( i2sz( 1), r6)
+  val r8 = $BS.pack "t"
+  val () = assertloc( r7 = r8)
   val () = $BS.free(r1)
   val () = $BS.free(r3)
   val () = $BS.free(r4)
   val () = $BS.free(r5)
-  val () = $BS.free(r6)
+  val () = $BS.free(r7)
+  val () = $BS.free(r8)
 }
