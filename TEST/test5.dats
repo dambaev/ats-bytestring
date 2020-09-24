@@ -14,6 +14,8 @@ implement main0() = {
   val () = assertloc( s3 =  s2)
   val s4 = $BS.takeC( i2sz(1), s3)
   val s5 = $BS.pack "h"
+  val tmp = $BS.create( i2sz 1024)
+  val () = $BS.printlnC( tmp + $BS.takeC( i2sz(4), $BS.pack( view@arr | addr@arr, i2sz(5))) + $BS.pack " world" + $BS.pack " and others" )
   val () = $BS.free(s2)
   val () = $BS.free(s4)
   val () = $BS.free(s5)
