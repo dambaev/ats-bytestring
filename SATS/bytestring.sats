@@ -182,6 +182,16 @@ fn
   {n,cap: nat | cap > 0}
   ( i: !Bytestring(n,cap)
   ): string(n)
+fn
+  bs2bytes
+  {n,cap: nat | cap > 0; cap >= n}
+  ( i: !Bytestring(n,cap) >> minus_vt( Bytestring(n,cap), bytes(n) @ l)
+  ):<>
+  #[l:agz]
+  ( bytes(n) @ l
+  | ptr l
+  , size_t(n)
+  )
 
 fn
   drop

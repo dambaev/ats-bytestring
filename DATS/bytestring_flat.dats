@@ -40,7 +40,8 @@ extern castfn
   {a:viewt0ype}{n,cap:nat}
   ( bs: !Bytestring(n,cap) >> Bs_minus_struct( n, offset, cap, l)
   ):<>
-  #[l,l1:addr]
+  #[l:addr]
+  #[l1:agz]
   #[offset: nat]
   ( result_vb( cap > 0, void, ( (size_t, size_t, ptr l1) @ l, mfree_gc_v l, array_v(char, l1, cap), mfree_gc_v l1) )
   | Bytestring_impl(n, offset, cap, l)
@@ -386,20 +387,59 @@ implement bs2ptr(i) = ret where {
   val () = assertloc( ptr_isnot_null ret)
 }
 
+fn
+  {a:viewt0ype}
+  ptr1_add_sz
+  {l:agz}{n:nat}
+  ( i: ptr l
+  , n: size_t n
+  ):<>
+  [ newl: agz | (newl == l) || (newl == l+n*sizeof(a)) ]
+  ptr newl =
+let
+  val ret = ptr_add<a>(i, n)
+in
+  ifcase
+  | ptr_isnot_null ret => ret
+  | _ => i
+end
+
+implement bs2bytes{n,cap}(i) = ret where {
+  prval () = lemma_bytestring_param(i)
+  val (rpf | impl) = bs_takeout_struct(i)
+  prval () = lemma_bytestring_impl_param(impl)
+  val (len, offset, _, tuple) = impl
+  prval succ_vb( pf) = rpf
+  prval (tuple_pf, t_fpf, pf, fpf) = pf
+  val (unused_offset, recfnt, p) = !tuple
+  val ptr = ptr1_add_sz<char>( p, offset)
+  prval () = rpf := succ_vb( (tuple_pf, t_fpf, pf, fpf))
+
+  prval () = bs_takeback_struct( rpf | i)
+  extern prfun
+    believeme
+    {l:agz}
+    ( i: !Bytestring(n,cap) >> minus_vt( Bytestring(n,cap), bytes(n) @ l)
+    , ptr l
+    ): ( bytes(n) @ l)
+  val ret = ( believeme(i, ptr) | ptr, len)
+}
+
 implement bs2string{n,cap}(i) = ret where {
   prval () = lemma_bytestring_param(i)
   val (rpf | impl) = bs_takeout_struct(i)
+  prval () = lemma_bytestring_impl_param(impl)
   val (_, offset, _, tuple) = impl
   prval succ_vb( pf) = rpf
   prval (tuple_pf, t_fpf, pf, fpf) = pf
   val (unused_offset, recfnt, p) = !tuple
   extern castfn believeme{l:addr}( i: ptr l): string(n)
-  val ret = believeme(p)
+  val ret = believeme(ptr_add<char>(p, offset))
   prval () = rpf := succ_vb( (tuple_pf, t_fpf, pf, fpf))
   
   prval () = bs_takeback_struct( rpf | i)
 }
-  
+
 implement drop{i,n,cap}(n, i) =
 let
   prval () = lemma_bytestring_param(i)

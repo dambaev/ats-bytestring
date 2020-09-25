@@ -30,7 +30,8 @@ ATS_TEST_DATS=\
 	TEST/test2.dats \
 	TEST/test3.dats \
 	TEST/test4.dats \
-	TEST/test5.dats
+	TEST/test5.dats \
+	TEST/test6.dats
 ATS_DATS=DATS/bytestring_flat.dats
 ATS_SATS=SATS/bytestring.sats
 ######
@@ -57,7 +58,8 @@ test: $(ATS_TEST_OBJS) \
 		test2 \
 		test3 \
 		test4 \
-		test5
+		test5 \
+		test6
 
 test1: $(ATS_TEST_OBJS) ; \
    $(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/test1.dats $(ATSLIBS)
@@ -69,6 +71,8 @@ test4: $(ATS_TEST_OBJS) ; \
    $(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/test4.dats $(ATSLIBS)
 test5: $(ATS_TEST_OBJS) ; \
    $(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/test5.dats $(ATSLIBS)
+test6: $(ATS_TEST_OBJS) ; \
+   $(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/test6.dats $(ATSLIBS)
 cleanall:: ; $(RMF) test*
 #
 ######
