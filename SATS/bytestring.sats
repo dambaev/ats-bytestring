@@ -81,9 +81,17 @@ fn
   Bytestring(n,cap)
 
 fn
-  pack_bytes
+  pack_chars
   {n:nat}{l:agz}
   ( !array_v( char, l, n)
+  | i: ptr l
+  , sz: size_t n
+  ):
+  Bytestring( n, n)
+fn
+  pack_bytes
+  {n:nat}{l:agz}
+  ( !bytes(n) @ l
   | i: ptr l
   , sz: size_t n
   ):
@@ -91,7 +99,7 @@ fn
 
 symintr pack
 overload pack with pack_string
-overload pack with pack_bytes
+overload pack with pack_chars
 
 fn
   is_empty

@@ -61,6 +61,15 @@ in
 end
 
 extern fn
+  memcpyb
+  {n,n1,n2:pos | n >= n1; n2 >= n1 }{l,l1:addr}
+  ( !array_v(char?, l, n) >> array_v(char,l,n)
+  , !array_v(byte, l1, n2)
+  | dst: ptr l
+  , src: ptr l1
+  , sz: size_t n1
+  ): void = "mac#memcpy"
+extern fn
   memcpy
   {n,n1,n2:pos | n >= n1; n2 >= n1 }{l,l1:addr}
   ( !array_v(char?, l, n) >> array_v(char,l,n)
@@ -125,13 +134,25 @@ in
     end
 end
 
-implement pack_bytes{n}{l}(i_pf | i, sz) =
+implement pack_chars{n}{l}(i_pf | i, sz) =
 if sz = 0
 then empty()
 else
   let
     val (pf, fpf | ptr) = array_ptr_alloc<char>(sz)
     val () = memcpy( pf, i_pf | ptr, i, sz)
+    val (t_pf, t_fpf | p) = ptr_alloc<(size_t, size_t, ptr)>()
+    val () = !p := (sz, i2sz(0), ptr)
+  in
+    $UN.castvwtp0{Bytestring(n,n)} ( ( (t_pf, t_fpf, pf, fpf) | (sz, i2sz(0), sz, p)) )
+  end
+implement pack_bytes{n}{l}(i_pf | i, sz) =
+if sz = 0
+then empty()
+else
+  let
+    val (pf, fpf | ptr) = array_ptr_alloc<char>(sz)
+    val () = memcpyb( pf, i_pf | ptr, i, sz)
     val (t_pf, t_fpf | p) = ptr_alloc<(size_t, size_t, ptr)>()
     val () = !p := (sz, i2sz(0), ptr)
   in
