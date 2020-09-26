@@ -9,7 +9,7 @@ absvt0ype Bytestring(n:int, cap: int) = ( void | (size_t, size_t, size_t, ptr))
 (* bytestring, that can be empty *)
 vtypedef
   Bytestring0 =
-  [n,cap: nat | n >= 0]
+  [n,cap: nat | n >= 0; cap >= n]
   Bytestring(n,cap)
 
 (* non-empty bytestring *)
@@ -17,6 +17,12 @@ vtypedef
   Bytestring1 =
   [n,cap: pos | n <= cap]
   Bytestring( n, cap)
+
+vtypedef
+  Bytestring10(n:int) =
+  {n:nat}
+  [cap: nat]
+  Bytestring(n,cap)
 
 prfun
   lemma_bytestring_param
