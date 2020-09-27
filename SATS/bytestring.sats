@@ -19,9 +19,15 @@ vtypedef
   Bytestring( n, cap)
 
 vtypedef
-  Bytestring10(n:int) =
+  Bytestring00(n:int) =
   {n:nat}
   [cap: nat]
+  Bytestring(n,cap)
+
+vtypedef
+  Bytestring10 =
+  {n:pos}
+  [cap:nat]
   Bytestring(n,cap)
 
 prfun
