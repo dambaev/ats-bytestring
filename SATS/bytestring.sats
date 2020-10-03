@@ -386,47 +386,6 @@ fn
  
 
 fn
-  pack_bytes
-  {n:nat}{l:agz}
-  ( !bytes(n) @ l
-  | i: ptr l
-  , sz: size_t n
-  ):
-  Bytestring( n, n)
-
-overload pack with pack_chars
-
-(*
-  1.
-  val s = $BS.pack "hello"
-  val h = $BS.take( 1, s) (* R(s) = 1, R(h) = 0 *)
-  val h1 = $BS.take(1, h) (* now R(s) = 1, R(h) = 1, R(h1) = 0*)
-  val () = $BS.free( h1, h) (* h1 freed, R(h) = 0 *)
-  val () = $BS.free( h, s) (* h freed, R(s) = 0 *)
-  val () = $BS.free(s)
-  2.
-  val buf = create 1000 (* R(buf) = 0 *)
-  val s = $BS.appendC( buf, $BS.pack "he") (* R(s) = 0 *)
-  val s1 = s + $BS.pack "llo" (* R(s1) = 0 *)
-  val $BS.free( s1)
-  3.
-  val buf = create 10 (* R(buf) = 0,U(buf) = 10 *)
-  val he = $BS.pack "he" (* R(he) = 0, U(he)=0 *)
-  val s = $BS.append( buf, he) (* R(s) = 0, U(s) = 8 (s is the tail of busy buffer)R(buf) = 1, U(buf) = 0(buf is not the tail of busy buffer), R(he) = 0 *)
-  val s1 = $BS.append( s, he) (* R(s) = 1, U(s) = 0 (not tail), R(he) = 0, R(s1) = 0, U(s1) = 6 *)
-  val s2 = $BS.append( s, he) (*creates new buffer, because R(s) > 0 *)
-  (* val s3 = $BS.take( 2, s1) (* R(s1) = 1, R(s3) = 0 *)
-    val s4 = $BS.append( s1, he)
-  *)
-  4.
-  var buf @[bytes][1024] with buf_pf
-  val sz = recvfrom( fd, addr@buf, 1024)
-  val bs = $BS.pack( buf_pf | buf, sz)
-  val () = handle_packet( bs)
-  val () = $BS.free( buf_pf | buf, bs)
-*)
-
-fn
   copy
   {n,cap,refcnt: nat | cap >= n}
   ( i: !Bytestring(n,cap,refcnt)
@@ -444,39 +403,5 @@ fn
   {n,cap: nat | cap > 0}
   ( i: !Bytestring(n,cap)
   ): string(n)
-fn
-  drop
-  {i,n,cap: nat | n <= i }
-  ( n: size_t n
-  , i: !Bytestring(i,cap)
-  ):<!wrt>
-  [ newn: nat | (i == 0 && newn == 0) || (i > 0 && newn == i - n)]
-  Bytestring( newn, cap)
-fn
-  dropC
-  {i,n,cap: nat | n <= i }
-  ( n: size_t n
-  , i: Bytestring(i,cap)
-  ):<!wrt>
-  [ newn: nat | (i == 0 && newn == 0) || (i > 0 && newn == i - n)]
-  Bytestring( newn, cap)
-
-fn
-  take
-  {i,n,cap: nat}
-  ( n: size_t n
-  , i: !Bytestring(i, cap)
-  ):<!wrt>
-  [newn: nat | (n > i && newn == i) || (newn == n) ]
-  Bytestring( newn, cap)
-
-fn
-  takeC
-  {i,n,cap: nat}
-  ( n: size_t n
-  , i: Bytestring(i, cap)
-  ):<!wrt>
-  [newn: nat | (n > i && newn == i) || (newn == n) ]
-  Bytestring( newn, cap)
 
 *)
