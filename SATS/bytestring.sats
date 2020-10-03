@@ -372,8 +372,8 @@ fn
 
 fn
   bs2bytes
-  {n,offset,cap,ucap,refcnt: nat | cap > 0; cap >= n}{dynamic:bool}{l:addr}
-  ( i: !Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l) >> minus_vt( Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l), bytes(n) @ l1)
+  {n,offset,cap,ucap: nat | cap > 0; cap >= n}{dynamic:bool}{l:addr}
+  ( i: !Bytestring_vtype(n,offset,cap,ucap,0,dynamic,l) >> minus_vt( Bytestring_vtype(n,offset,cap,ucap,0,dynamic,l), bytes(n) @ l1)
   ):<>
   #[l1:agz]
   ( bytes(n) @ l1

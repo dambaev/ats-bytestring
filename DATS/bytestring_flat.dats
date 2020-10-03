@@ -666,7 +666,7 @@ implement printlnC(i) = {
   val () = free( i)
 }
 
-implement bs2bytes{n,offset,cap,ucap,refcnt}{dynamic}{l}(i) = ret where {
+implement bs2bytes{n,offset,cap,ucap}{dynamic}{l}(i) = ret where {
   prval () = lemma_bytestring_param(i)
   val (rpf | impl) = bs_takeout_struct(i)
   val (len, offset, cap, ucap, refcnt, dynamic, p) = impl
@@ -679,7 +679,7 @@ implement bs2bytes{n,offset,cap,ucap,refcnt}{dynamic}{l}(i) = ret where {
   extern prfun
     believeme
     {l1:agz}
-    ( i: !Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l) >> minus_vt( Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l), bytes(n) @ l1)
+    ( i: !Bytestring_vtype(n,offset,cap,ucap,0,dynamic,l) >> minus_vt( Bytestring_vtype(n,offset,cap,ucap,0,dynamic,l), bytes(n) @ l1)
     , ptr l1
     ): ( bytes(n) @ l1)
   val ret = ( believeme(i, ptr) | ptr, len)
