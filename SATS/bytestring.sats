@@ -172,6 +172,17 @@ fn
   ):<> bool( dynamic == false)
 
 fn
+  eq_bytestring_bytestringC
+  {l_len, r_len, l_offset, r_offset, l_cap, r_cap, l_ucap, r_ucap, l_refcnt: nat}
+  {l_dynamic,r_dynamic:bool}
+  {l_p,r_p: addr}
+  ( l: !Bytestring_vtype( l_len, l_offset, l_cap, l_ucap, l_refcnt, l_dynamic, l_p)
+  , r: Bytestring_vtype( r_len, r_offset, r_cap, r_ucap, 0, r_dynamic, r_p)
+  ):<!wrt>
+  [r: bool | (l_len == r_len && r ) || (l_len != r_len || r == false)]
+  bool(r)
+
+fn
   eq_bytestring_bytestring
   {l_len, r_len, l_offset, r_offset, l_cap, r_cap, l_ucap, r_ucap, l_refcnt, r_refcnt: nat}
   {l_dynamic,r_dynamic:bool}
@@ -195,6 +206,13 @@ fn
 overload <> with neq_bytestring_bytestring
 overload != with neq_bytestring_bytestring
 
+fn
+  neq_bytestring_bytestringC
+  {l_len, l_offset, l_cap, l_ucap, l_refcnt: nat}{l_dynamic:bool}{l_p:addr}
+  {r_len, r_offset, r_cap, r_ucap: nat}{r_dynamic:bool}{r_p:addr}
+  ( l: !Bytestring_vtype( l_len, l_offset, l_cap, l_ucap, l_refcnt, l_dynamic, l_p)
+  , r: Bytestring_vtype( r_len, r_offset, r_cap, r_ucap, 0, r_dynamic, r_p)
+  ):<!wrt> bool
 
 (* creates new bytestring with content of r appended to l. does not consumes l and r 
   in case if 'l' has enough unused capacity to fit 'r', it will copy content of 'r' into this unused space, incrementing reference counter of l and result

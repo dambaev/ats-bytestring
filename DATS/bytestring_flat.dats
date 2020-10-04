@@ -685,6 +685,11 @@ end
 implement isnot_empty(v) = not( is_empty(v))
 
 implement neq_bytestring_bytestring(l, r) = not( l = r)
+implement eq_bytestring_bytestringC(l, r) = res where {
+  val res = l = r
+  val () = free( r)
+}
+implement neq_bytestring_bytestringC(l, r) = not( eq_bytestring_bytestringC( l, r))
   
   
 implement drop_impl(n, i) =
