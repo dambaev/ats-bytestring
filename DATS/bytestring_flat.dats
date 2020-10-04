@@ -61,6 +61,82 @@ extern praxi
   | bs: !Bs_minus_struct( n, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( n, offset, cap, ucap, refcnt, dynamic, l)
   ):<> void
 
+extern fn
+  append_impl
+  {l_len, l_offset, l_cap, l_ucap, l_refcnt: nat}{l_dynamic:bool}{l_p:addr}
+  {r_len, r_offset, r_cap, r_ucap, r_refcnt: nat}{r_dynamic:bool}{r_p:addr}
+  ( l: &Bytestring_vtype(l_len, l_offset, l_cap, l_ucap, l_refcnt, l_dynamic, l_p) >> Bytestring_vtype( l_len, l_offset, l_cap, rl_ucap, rl_refcnt, l_dynamic, l_p)
+  , r: &Bytestring_vtype(r_len, r_offset, r_cap, r_ucap, r_refcnt, r_dynamic, r_p) >>Bytestring_vtype( r_len, r_offset, r_cap, rr_ucap, rr_refcnt, r_dynamic, r_p)
+  ):<!wrt>
+  #[rr_ucap: nat | (l_len == 0 && l_ucap < r_len && rr_ucap == 0) || ((l_len > 0 || l_ucap >= r_len) && rr_ucap == r_ucap)]
+  #[rr_refcnt:nat | (l_len == 0 && l_ucap < r_len && rr_refcnt == r_refcnt + 1) || ((l_len > 0 || l_ucap >= r_len) && rr_refcnt == r_refcnt )]
+  #[rl_ucap: nat | (l_ucap >= r_len && rl_ucap == 0) || (l_ucap < r_len && rl_ucap == l_ucap)]
+  #[rl_refcnt:nat | (l_ucap >= r_len && rl_refcnt == l_refcnt + 1) || (l_ucap < r_len && rl_refcnt == l_refcnt )]
+  #[offset:nat | (l_ucap >= r_len && offset == l_offset) || (l_len == 0 && l_ucap < r_len && offset == r_offset) || (l_ucap < r_len && offset == 0)]
+  #[cap:nat | ( l_ucap >= r_len && cap == l_cap) || (l_len == 0 && l_ucap < r_len && cap == r_cap) || (l_ucap < r_len && cap == l_len + r_len)]
+  #[ucap:nat | (l_ucap >= r_len && ucap == l_ucap - r_len) || (l_len == 0 && l_ucap < r_len && ucap == r_ucap) || (l_len > 0 && l_ucap < r_len && ucap == 0)]
+  #[refcnt:nat | (l_ucap >= r_len && refcnt == 1) || (l_len == 0 && l_ucap < r_len && refcnt == 1) || (l_len > 0 && l_ucap < r_len && refcnt == 0)]
+  #[dynamic:bool | (l_ucap >= r_len && dynamic == l_dynamic) || (l_len == 0 && l_ucap < r_len && dynamic == r_dynamic) || (l_len > 0 && l_ucap < r_len && dynamic == true) ]
+  #[l:addr | (l_ucap >= r_len && l == l_p) || (l_len == 0 && l_ucap < r_len && l == r_p) || (l_len > 0 && l_ucap < r_len && l > null) ]
+  Bytestring_vtype( l_len+r_len, offset, cap, ucap, refcnt, dynamic, l)
+
+(* the same as append, but consumes arguments in order to make caller's code clear from bunch of val's and free()
+ *)
+extern fn
+  appendC_impl
+  {l_len, l_offset, l_cap, l_ucap: nat}{l_dynamic:bool}{l_p:addr}
+  {r_len, r_offset, r_cap, r_ucap: nat}{r_dynamic:bool}{r_p:addr}
+  ( l: Bytestring_vtype(l_len, l_offset, l_cap, l_ucap, 0, l_dynamic, l_p)
+  , r: Bytestring_vtype(r_len, r_offset, r_cap, r_ucap, 0, r_dynamic, r_p)
+  ):<!wrt>
+  [offset:nat | (l_ucap >= r_len && offset == l_offset) || (l_len == 0 && l_ucap < r_len && offset == r_offset) || (l_ucap < r_len && offset == 0)]
+  [cap:nat | (l_ucap >= r_len && cap == l_cap) || (l_len == 0 && l_ucap < r_len && cap == r_cap) || (l_ucap < r_len && cap == l_len + r_len)]
+  [ucap:nat | (l_ucap >= r_len && ucap == l_ucap - r_len) || (l_len == 0 && l_ucap < r_len && ucap == r_ucap) || (l_ucap < r_len && ucap == 0)]
+  [dynamic:bool | (l_ucap >= r_len && dynamic == l_dynamic) || (l_len == 0 && l_ucap < r_len && dynamic == r_dynamic) || (l_ucap < r_len && dynamic == true) ]
+  [l:addr | (l_ucap >= r_len && l == l_p) || (l_len == 0 && l_ucap < r_len && l == r_p) || (l_len > 0 && l_ucap < r_len && l > null) ]
+  Bytestring_vtype( l_len+r_len, offset, cap, ucap, 0, dynamic, l)
+
+extern fn
+  take_impl
+  {n:nat}
+  {len, offset, cap, ucap, refcnt: nat}{dynamic:bool}{l:addr}
+  ( n: size_t n
+  , i: &Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, ucap, refcnt + 1, dynamic, l)
+  ):<!wrt>
+  [newl: nat | (n <= len && newl == n) || (n > len && newl == len)]
+  Bytestring_vtype( newl, offset, cap, 0, 1, dynamic, l)
+  
+extern fn
+  takeC_impl
+  {n:nat}
+  {len, offset, cap, ucap: nat}{dynamic:bool}{l:addr}
+  ( n: size_t n
+  , i: Bytestring_vtype( len, offset, cap, ucap, 0, dynamic, l)
+  ):<!wrt>
+  [newl: nat | (n <= len && newl == n) || (n > len && newl == len)]
+  Bytestring_vtype( newl, offset, cap, 0, 0, dynamic, l)
+
+extern fn
+  drop_impl
+  {n:nat}
+  {len, offset, cap, ucap, refcnt: nat}{dynamic:bool}{l:addr}
+  ( n: size_t n
+  , i: &Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, 0, refcnt + 1, dynamic, l)
+  ):<!wrt>
+  #[newl: nat | (n <= len && newl == len - n) || (n > len && newl == 0)]
+  #[newoffset: nat | (n <= len && newoffset == offset + n) || (n > len && newoffset == 0)  ]
+  Bytestring_vtype( newl, newoffset, cap, ucap, 1, dynamic, l)
+  
+extern fn
+  dropC_impl
+  {n:nat}
+  {len, offset, cap, ucap: nat}{dynamic:bool}{l:addr}
+  ( n: size_t n
+  , i: Bytestring_vtype( len, offset, cap, ucap, 0, dynamic, l)
+  ):<!wrt>
+  [newl: nat | (n <= len && newl == len - n) || (n > len && newl == 0)]
+  [newoffset: nat | (n <= len && newoffset == offset + n) || (n > len && newoffset == 0)  ]
+  Bytestring_vtype( newl, newoffset, cap, ucap, 0, dynamic, l)
 
 implement empty() = believeme( () | ( i2sz(0), i2sz(0), i2sz(0), i2sz(0), i2sz(0), false, the_null_ptr)) where {
   extern castfn
@@ -303,7 +379,7 @@ in
 end
   
 implement 
-  appendC
+  appendC_impl
   {l_len, l_offset, l_cap, l_ucap}{l_dynamic}{l_p}
   {r_len, r_offset, r_cap, r_ucap}{r_dynamic}{r_p}
   ( vl, vr) =
@@ -316,7 +392,7 @@ let
   val l_len = length l
   val r_len = length r
   var res: Bytestring0?
-  val () = res := append( l, r)
+  val () = res := append_impl( l, r)
 in
   ifcase
   | (l_len = 0) * (l_ucap < r_len) => res where {
@@ -378,7 +454,7 @@ extern fn
   , sz: size_t n1
   ):<!wrt> void = "mac#memcpy"
 
-implement append
+implement append_impl
   {l_len, l_offset, l_cap, l_ucap, l_refcnt}{l_dynamic}{l_p}
   {r_len, r_offset, r_cap, r_ucap, r_refcnt}{r_dynamic}{r_p}
   (l, r) =
@@ -610,7 +686,7 @@ implement isnot_empty(v) = not( is_empty(v))
 implement neq_bytestring_bytestring(l, r) = not( l = r)
   
   
-implement drop(n, i) =
+implement drop_impl(n, i) =
 let
   val res = ref_bs_child i
   val (rpf | impl) = bs_explode( res)
@@ -626,16 +702,16 @@ in
 end
   
   
-implement dropC( n, i) = res where {
+implement dropC_impl( n, i) = res where {
   val i_len = length i
   var res: Bytestring0?
   var vi: Bytestring0?
   val () = vi := i
-  val () = res := drop( n, vi)
+  val () = res := drop_impl( n, vi)
   val () = free( vi, res)
 }
 
-implement take(n, i) =
+implement take_impl(n, i) =
 let
   val res = ref_bs_parent i
   val (rpf | impl) = bs_explode( res)
@@ -651,12 +727,12 @@ in
 end
   
   
-implement takeC( n, i) = res where {
+implement takeC_impl( n, i) = res where {
   val i_len = length i
   var res: Bytestring0?
   var vi: Bytestring0?
   val () = vi := i
-  val () = res := take( n, vi)
+  val () = res := take_impl( n, vi)
   val () = free( vi, res)
 }
 
@@ -767,6 +843,26 @@ implement init( i, v) = {
   val _ = explode( i)
   val () = i := bs_build( rpf | impl)
 }
+
+implement append(l, r) = res where {
+  prval () = lemma_bytestring_param( l)
+  prval () = lemma_bytestring_param( r)
+  val res = append_impl( l, r)
+}
+
+implement appendC(l, r) = res where {
+  prval () = lemma_bytestring_param( l)
+  prval () = lemma_bytestring_param( r)
+  val res = appendC_impl( l, r)
+}
+
+implement take( n, i) = take_impl( n, i)
+
+implement takeC(n, i) = takeC_impl( n, i)
+
+implement drop(n, i) = drop_impl( n, i)
+
+implement dropC(n, i) = dropC_impl( n, i)
 
 (*
   

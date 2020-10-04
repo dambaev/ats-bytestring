@@ -3,7 +3,7 @@
 #define ATS_DYNLOADFLAG 0
   
 staload BS="SATS/bytestring.sats"
-staload "DATS/bytestring_flat.dats"
+staload "SATS/bytestring.sats"
 
 fn
   test()

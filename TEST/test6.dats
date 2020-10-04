@@ -4,7 +4,6 @@
   
 staload BS="SATS/bytestring.sats"
 staload "SATS/bytestring.sats"
-staload "DATS/bytestring_flat.dats"
 
 implement main0() = {
   val s1 = $BS.create( i2sz 20)

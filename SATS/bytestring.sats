@@ -206,16 +206,9 @@ fn
   ( l: &Bytestring_vtype(l_len, l_offset, l_cap, l_ucap, l_refcnt, l_dynamic, l_p) >> Bytestring_vtype( l_len, l_offset, l_cap, rl_ucap, rl_refcnt, l_dynamic, l_p)
   , r: &Bytestring_vtype(r_len, r_offset, r_cap, r_ucap, r_refcnt, r_dynamic, r_p) >>Bytestring_vtype( r_len, r_offset, r_cap, rr_ucap, rr_refcnt, r_dynamic, r_p)
   ):<!wrt>
-  #[rr_ucap: nat | (l_len == 0 && l_ucap < r_len && rr_ucap == 0) || ((l_len > 0 || l_ucap >= r_len) && rr_ucap == r_ucap)]
-  #[rr_refcnt:nat | (l_len == 0 && l_ucap < r_len && rr_refcnt == r_refcnt + 1) || ((l_len > 0 || l_ucap >= r_len) && rr_refcnt == r_refcnt )]
-  #[rl_ucap: nat | (l_ucap >= r_len && rl_ucap == 0) || (l_ucap < r_len && rl_ucap == l_ucap)]
-  #[rl_refcnt:nat | (l_ucap >= r_len && rl_refcnt == l_refcnt + 1) || (l_ucap < r_len && rl_refcnt == l_refcnt )]
-  #[offset:nat | (l_ucap >= r_len && offset == l_offset) || (l_len == 0 && l_ucap < r_len && offset == r_offset) || (l_ucap < r_len && offset == 0)]
-  #[cap:nat | ( l_ucap >= r_len && cap == l_cap) || (l_len == 0 && l_ucap < r_len && cap == r_cap) || (l_ucap < r_len && cap == l_len + r_len)]
-  #[ucap:nat | (l_ucap >= r_len && ucap == l_ucap - r_len) || (l_len == 0 && l_ucap < r_len && ucap == r_ucap) || (l_len > 0 && l_ucap < r_len && ucap == 0)]
-  #[refcnt:nat | (l_ucap >= r_len && refcnt == 1) || (l_len == 0 && l_ucap < r_len && refcnt == 1) || (l_len > 0 && l_ucap < r_len && refcnt == 0)]
-  #[dynamic:bool | (l_ucap >= r_len && dynamic == l_dynamic) || (l_len == 0 && l_ucap < r_len && dynamic == r_dynamic) || (l_len > 0 && l_ucap < r_len && dynamic == true) ]
-  #[l:addr | (l_ucap >= r_len && l == l_p) || (l_len == 0 && l_ucap < r_len && l == r_p) || (l_len > 0 && l_ucap < r_len && l > null) ]
+  #[rr_ucap,rr_refcnt, rl_ucap, rl_refcnt, offset, cap, ucap, refcnt: nat]
+  #[dynamic:bool]
+  #[l:addr | (l_len > 0 || r_len > 0) && l > null]
   Bytestring_vtype( l_len+r_len, offset, cap, ucap, refcnt, dynamic, l)
 
 (* the same as append, but consumes arguments in order to make caller's code clear from bunch of val's and free()
@@ -227,11 +220,9 @@ fn
   ( l: Bytestring_vtype(l_len, l_offset, l_cap, l_ucap, 0, l_dynamic, l_p)
   , r: Bytestring_vtype(r_len, r_offset, r_cap, r_ucap, 0, r_dynamic, r_p)
   ):<!wrt>
-  [offset:nat | (l_ucap >= r_len && offset == l_offset) || (l_len == 0 && l_ucap < r_len && offset == r_offset) || (l_ucap < r_len && offset == 0)]
-  [cap:nat | (l_ucap >= r_len && cap == l_cap) || (l_len == 0 && l_ucap < r_len && cap == r_cap) || (l_ucap < r_len && cap == l_len + r_len)]
-  [ucap:nat | (l_ucap >= r_len && ucap == l_ucap - r_len) || (l_len == 0 && l_ucap < r_len && ucap == r_ucap) || (l_ucap < r_len && ucap == 0)]
-  [dynamic:bool | (l_ucap >= r_len && dynamic == l_dynamic) || (l_len == 0 && l_ucap < r_len && dynamic == r_dynamic) || (l_ucap < r_len && dynamic == true) ]
-  [l:addr | (l_ucap >= r_len && l == l_p) || (l_len == 0 && l_ucap < r_len && l == r_p) || (l_len > 0 && l_ucap < r_len && l > null) ]
+  [offset, cap, ucap: nat | (l_len > 0 || r_len > 0) && (cap > 0)]
+  [dynamic:bool]
+  [l:addr | (l_len > 0 || r_len > 0) && l > null]
   Bytestring_vtype( l_len+r_len, offset, cap, ucap, 0, dynamic, l)
 
 overload + with appendC
@@ -315,7 +306,7 @@ fn
   ( n: size_t n
   , i: &Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, ucap, refcnt + 1, dynamic, l)
   ):<!wrt>
-  [newl: nat | (n <= len && newl == n) || (n > len && newl == len)]
+  [newl: nat]
   Bytestring_vtype( newl, offset, cap, 0, 1, dynamic, l)
   
 fn
@@ -325,7 +316,7 @@ fn
   ( n: size_t n
   , i: Bytestring_vtype( len, offset, cap, ucap, 0, dynamic, l)
   ):<!wrt>
-  [newl: nat | (n <= len && newl == n) || (n > len && newl == len)]
+  [newl: nat]
   Bytestring_vtype( newl, offset, cap, 0, 0, dynamic, l)
 
 fn
@@ -335,8 +326,8 @@ fn
   ( n: size_t n
   , i: &Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, 0, refcnt + 1, dynamic, l)
   ):<!wrt>
-  #[newl: nat | (n <= len && newl == len - n) || (n > len && newl == 0)]
-  #[newoffset: nat | (n <= len && newoffset == offset + n) || (n > len && newoffset == 0)  ]
+  #[newl: nat]
+  #[newoffset: nat]
   Bytestring_vtype( newl, newoffset, cap, ucap, 1, dynamic, l)
   
 fn
@@ -346,8 +337,8 @@ fn
   ( n: size_t n
   , i: Bytestring_vtype( len, offset, cap, ucap, 0, dynamic, l)
   ):<!wrt>
-  [newl: nat | (n <= len && newl == len - n) || (n > len && newl == 0)]
-  [newoffset: nat | (n <= len && newoffset == offset + n) || (n > len && newoffset == 0)  ]
+  [newl: nat]
+  [newoffset: nat]
   Bytestring_vtype( newl, newoffset, cap, ucap, 0, dynamic, l)
 
 fn
@@ -362,7 +353,7 @@ fn
 
 fn
   bs2bytes
-  {n,offset,cap,ucap: nat | cap > 0; cap >= n}{dynamic:bool}{l:addr}
+  {n,offset,cap,ucap: nat | cap > 0}{dynamic:bool}{l:addr}
   ( i: !Bytestring_vtype(n,offset,cap,ucap,0,dynamic,l) >> minus_vt( Bytestring_vtype(n,offset,cap,ucap,0,dynamic,l), bytes(n) @ l1)
   ):<>
   #[l1:agz]
