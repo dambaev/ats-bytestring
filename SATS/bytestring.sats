@@ -38,7 +38,7 @@ vtypedef
   Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamically_allocated,l)
 
 vtypedef
-  Bytestring(len) =
+  Bytestring(len:int) =
   {len: nat}[offset,cap,ucap,refcnt:nat][dynamically_allocated:bool][l:agz]
   Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamically_allocated,l)
 
