@@ -109,12 +109,13 @@ extern fn
 extern fn
   takeC_impl
   {n:nat}
-  {len, offset, cap, ucap: nat}{dynamic:bool}{l:addr}
+  {len, offset, cap, ucap, refcnt: nat}{dynamic:bool}{l:addr}
   ( n: size_t n
-  , i: Bytestring_vtype( len, offset, cap, ucap, 0, dynamic, l)
+  , i: Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
   ):<!wrt>
-  [newl: nat | (n <= len && newl == n) || (n > len && newl == len)]
-  Bytestring_vtype( newl, offset, cap, 0, 0, dynamic, l)
+  [newl: nat | (n < len && newl == n) || (n >= len && newl == len)]
+  [newucap: nat | (n < len && newucap == 0) || (n >= len && newucap == ucap) ]
+  Bytestring_vtype( newl, offset, cap, newucap, refcnt, dynamic, l)
 
 extern fn
   drop_impl
@@ -130,13 +131,13 @@ extern fn
 extern fn
   dropC_impl
   {n:nat}
-  {len, offset, cap, ucap: nat}{dynamic:bool}{l:addr}
+  {len, offset, cap, ucap, refcnt: nat}{dynamic:bool}{l:addr}
   ( n: size_t n
-  , i: Bytestring_vtype( len, offset, cap, ucap, 0, dynamic, l)
+  , i: Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
   ):<!wrt>
-  [newl: nat | (n <= len && newl == len - n) || (n > len && newl == 0)]
-  [newoffset: nat | (n <= len && newoffset == offset + n) || (n > len && newoffset == 0)  ]
-  Bytestring_vtype( newl, newoffset, cap, ucap, 0, dynamic, l)
+  [newl: nat | (n < len && newl == len - n) || (n >= len && newl == 0)]
+  [newoffset: nat | (n < len && newoffset == offset + n) || (n >= len && newoffset == 0)  ]
+  Bytestring_vtype( newl, newoffset, cap, ucap, refcnt, dynamic, l)
 
 implement empty() = believeme( () | ( i2sz(0), i2sz(0), i2sz(0), i2sz(0), i2sz(0), false, the_null_ptr)) where {
   extern castfn
@@ -702,14 +703,14 @@ in
 end
   
   
-implement dropC_impl( n, i) = res where {
-  val i_len = length i
-  var res: Bytestring0?
-  var vi: Bytestring0?
-  val () = vi := i
-  val () = res := drop_impl( n, vi)
-  val () = free( vi, res)
-}
+implement dropC_impl( n, i) =
+let
+  val (rpf | (len, offset, cap, ucap, refcnt, dynamic, p)) = bs_explode( i)
+in
+  if n >= len
+  then bs_build( rpf | (i2sz 0, i2sz 0, cap, ucap, refcnt, dynamic, p))
+  else bs_build( rpf | ( len - n, offset + n, cap, ucap, refcnt, dynamic, p)) 
+end
 
 implement take_impl(n, i) =
 let
@@ -727,14 +728,14 @@ in
 end
   
   
-implement takeC_impl( n, i) = res where {
-  val i_len = length i
-  var res: Bytestring0?
-  var vi: Bytestring0?
-  val () = vi := i
-  val () = res := take_impl( n, vi)
-  val () = free( vi, res)
-}
+implement takeC_impl( n, i) =
+let
+  val ( rpf | (len, offset, cap, ucap, refcnt, dynamic, p)) = bs_explode( i)
+in
+  if n >= len
+  then bs_build( rpf | (len, offset, cap, ucap, refcnt, dynamic, p))
+  else bs_build( rpf | (n, offset, cap, i2sz 0, refcnt, dynamic, p))
+end
 
 implement println(i) = {
   prval () = lemma_bytestring_param(i)

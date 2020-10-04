@@ -312,12 +312,12 @@ fn
 fn
   takeC
   {n:nat}
-  {len, offset, cap, ucap: nat}{dynamic:bool}{l:addr}
+  {len, offset, cap, ucap, refcnt: nat}{dynamic:bool}{l:addr}
   ( n: size_t n
-  , i: Bytestring_vtype( len, offset, cap, ucap, 0, dynamic, l)
+  , i: Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
   ):<!wrt>
-  [newl: nat]
-  Bytestring_vtype( newl, offset, cap, 0, 0, dynamic, l)
+  [newl, newucap: nat]
+  Bytestring_vtype( newl, offset, cap, newucap, refcnt, dynamic, l)
 
 fn
   drop
@@ -333,13 +333,13 @@ fn
 fn
   dropC
   {n:nat}
-  {len, offset, cap, ucap: nat}{dynamic:bool}{l:addr}
+  {len, offset, cap, ucap, refcnt: nat}{dynamic:bool}{l:addr}
   ( n: size_t n
-  , i: Bytestring_vtype( len, offset, cap, ucap, 0, dynamic, l)
+  , i: Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
   ):<!wrt>
   [newl: nat]
   [newoffset: nat]
-  Bytestring_vtype( newl, newoffset, cap, ucap, 0, dynamic, l)
+  Bytestring_vtype( newl, newoffset, cap, ucap, refcnt, dynamic, l)
 
 fn
   println
