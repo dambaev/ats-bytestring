@@ -308,26 +308,29 @@ implement
   {r_len, r_offset, r_cap, r_ucap}{r_dynamic}{r_p}
   ( vl, vr) =
 let
-  var l = vl
-  var r = vr
+  var l: Bytestring0?
+  var r: Bytestring0?
+  val () = l := vl
+  val () = r := vr
   val l_ucap = unused_capacity l
   val l_len = length l
   val r_len = length r
-  val (l, r, res) = append( l, r)
+  var res: Bytestring0?
+  val () = res := append( l, r)
 in
   ifcase
   | (l_len = 0) * (l_ucap < r_len) => res where {
-    val res = free( r, res)
-    val () = free( l)
+    val () = free( r, res)
+    val () = free l
   }
   | (l_ucap < r_len) => res where {
     prval _ = prop_verify {l_ucap < r_len}()
-    val () = free( r)
+    val () = free r
     val () = free l
   }
   | _ => res where {
-    val () = free( r)
-    val res = free( l, res) 
+    val () = free r
+    val () = free( l, res) 
   }
 end
 
@@ -349,7 +352,7 @@ implement length_bs(i) = len where {
   prval () = bs_takeback_struct( rpf | i)
 }
 
-implement unref_bs( r, o) = o where {
+implement unref_bs( r, o) = {
   extern castfn
     explode
     {n,offset,cap,ucap,refcnt:nat}{dynamic:bool}{l:addr}
@@ -361,7 +364,7 @@ implement unref_bs( r, o) = o where {
   val _ = explode( r) (* we know, that r is just reference to o. r should not survive and o should survive *)
   val ( rpf | impl ) = bs_explode( o)
   val ( len, offset, cap, ucap, refcnt, dynamic, l) = impl
-  val o = bs_build( rpf | (len, offset, cap, ucap, refcnt - i2sz 1, dynamic, l))
+  val () = o := bs_build( rpf | (len, offset, cap, ucap, refcnt - i2sz 1, dynamic, l))
 }
 
 extern fn
@@ -412,14 +415,14 @@ let
     ):<> Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
 in
   ifcase
-  | is_empty l * (unused_capacity l < r_len) => (l,r,res) where {
-    val (r, res) = ref_bs_child r
+  | is_empty l * (unused_capacity l < r_len) => res where {
+    val res = ref_bs_child r
   }
-  | is_empty r => (l,r,res) where {
-    val (l, res) = ref_bs_child l
+  | is_empty r => res where {
+    val res = ref_bs_child l
   }
   (* create new buffer *)
-  | unused_capacity l < r_len => (l, r, res) where {
+  | unused_capacity l < r_len => res where {
     val res = create( l_len + r_len)
     val (res_rpf | impl) = bs_takeout_struct( res )
     val (res_len, res_offset, res_cap, res_ucap, res_refcnt, res_dynamic, res_p) = impl
@@ -468,9 +471,9 @@ in
     val res = build( () | ( l_len + r_len, res_offset, res_cap, res_ucap - l_len - r_len, res_refcnt, res_dynamic, res_l))
   }
   (* reuse l's unused capacity *)
-  | _ => (l, r, res) where {
+  | _ => res where {
     prval () = prop_verify {l_ucap >= r_len}()
-    val (l, res) = ref_bs_child l
+    val res = ref_bs_child l
     val ( rpf | impl) = bs_takeout_struct( res)
     val (res_len, res_offset, res_cap, res_ucap, res_refcnt, res_dynamic, res_p) = impl
     prval succ_vb( rpf0 ) = rpf
@@ -505,7 +508,7 @@ in
   }
 end
 
-implement ref_bs_child( i) = (i, res) where {
+implement ref_bs_child( i) = res where {
   extern castfn
     explode
     { len, offset, cap, ucap, refcnt:nat}{dynamic:bool}{l:addr}
@@ -534,9 +537,9 @@ implement ref_bs_child( i) = (i, res) where {
     ):<> Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
   val (i_len, i_offset, i_cap, i_ucap, i_refcnt, i_dynamic, i_p) = explode( i)
   val res = build( () | (i_len, i_offset, i_cap, i_ucap, i2sz 1, i_dynamic, i_p))
-  val i = build( () | (i_len, i_offset, i_cap, i2sz 0, i_refcnt + i2sz 1, i_dynamic, i_p))
+  val () = i := build( () | (i_len, i_offset, i_cap, i2sz 0, i_refcnt + i2sz 1, i_dynamic, i_p))
 }
-implement ref_bs_parent( i) = (i,res) where {
+implement ref_bs_parent( i) = res where {
   extern castfn
     explode
     { len, offset, cap, ucap, refcnt:nat}{dynamic:bool}{l:addr}
@@ -565,7 +568,7 @@ implement ref_bs_parent( i) = (i,res) where {
     ):<> Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
   val (i_len, i_offset, i_cap, i_ucap, i_refcnt, i_dynamic, i_p) = explode(i)
   val res = build( () | (i_len, i_offset, i_cap, i2sz 0, i2sz 1, i_dynamic, i_p))
-  val i = build( () | (i_len, i_offset, i_cap, i_ucap, i_refcnt + i2sz 1, i_dynamic, i_p))
+  val () = i := build( () | (i_len, i_offset, i_cap, i_ucap, i_refcnt + i2sz 1, i_dynamic, i_p))
 }
 
 implement create{cap}(cap) =
@@ -609,15 +612,15 @@ implement neq_bytestring_bytestring(l, r) = not( l = r)
   
 implement drop(n, i) =
 let
-  val (i, res) = ref_bs_child i
+  val res = ref_bs_child i
   val (rpf | impl) = bs_explode( res)
   val (len, offset, cap, ucap, refcnt, dynamic, p) = impl
 in
   if n > len
-  then (i, res) where {
+  then res where {
     val res = bs_build( rpf | (i2sz 0, i2sz 0, cap, ucap, refcnt, dynamic, p))
   }
-  else (i, res) where {
+  else res where {
     val res = bs_build( rpf | ( len - n, offset + n, cap, ucap, refcnt, dynamic, p))
   }
 end
@@ -625,21 +628,24 @@ end
   
 implement dropC( n, i) = res where {
   val i_len = length i
-  val (i, res) = drop( n, i)
-  val res = free( i, res)
+  var res: Bytestring0?
+  var vi: Bytestring0?
+  val () = vi := i
+  val () = res := drop( n, vi)
+  val () = free( vi, res)
 }
 
 implement take(n, i) =
 let
-  val (i, res) = ref_bs_parent i
+  val res = ref_bs_parent i
   val (rpf | impl) = bs_explode( res)
   val (len, offset, cap, ucap, refcnt, dynamic, p) = impl
 in
   if n > len
-  then (i, res) where {
+  then res where {
     val res = bs_build( rpf | (len, offset, cap, ucap, refcnt, dynamic, p))
   }
-  else (i, res) where {
+  else res where {
     val res = bs_build( rpf | ( n, offset, cap, ucap, refcnt, dynamic, p))
   }
 end
@@ -647,8 +653,11 @@ end
   
 implement takeC( n, i) = res where {
   val i_len = length i
-  val (i, res) = take( n, i)
-  val res = free( i, res)
+  var res: Bytestring0?
+  var vi: Bytestring0?
+  val () = vi := i
+  val () = res := take( n, vi)
+  val () = free( vi, res)
 }
 
 implement println(i) = {
@@ -683,6 +692,80 @@ implement bs2bytes{n,offset,cap,ucap}{dynamic}{l}(i) = ret where {
     , ptr l1
     ): ( bytes(n) @ l1)
   val ret = ( believeme(i, ptr) | ptr, len)
+}
+
+implement take1(n, i) =
+let
+  extern castfn
+    build
+    { len, offset, cap, ucap, refcnt:nat}{dynamic:bool}{l:addr}
+    ( void
+    | ( size_t(len)
+      , size_t(offset)
+      , size_t(cap)
+      , size_t(ucap)
+      , size_t(refcnt)
+      , bool(dynamic)
+      , ptr(l)
+      )
+    ):<> Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
+  val ( rpf | (len, offset,cap,ucap, refcnt, dynamic, p)) = bs_explode( i)
+  val () = i := bs_build( rpf | (len, offset, cap, ucap, refcnt + i2sz 1, dynamic, p))
+in
+   if n >= len
+   then build( () | (len, offset, cap, i2sz 0, i2sz 1, dynamic, p))
+   else build( () | (n, offset, cap, i2sz 0, i2sz 1, dynamic, p))
+end
+
+implement decref_bs( consume, preserve) = {
+  extern castfn
+    explode
+    { len, offset, cap, ucap, refcnt:nat}{dynamic:bool}{l:addr}
+    ( i: Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
+    ):<>
+    ( ( size_t(len)
+      , size_t(offset)
+      , size_t(cap)
+      , size_t(ucap)
+      , size_t(refcnt)
+      , bool(dynamic)
+      , ptr(l)
+      )
+    )
+  val _ = explode( consume)
+  val (rpf | impl) = bs_explode( preserve)
+  val (len, offset, cap, ucap, refcnt, dynamic, p) = impl
+  val () = preserve := bs_build( rpf | (len, offset, cap, ucap, refcnt - 1, dynamic, p))
+}
+implement deref( i) = res where {
+  extern castfn
+    deinit
+    { len, offset, cap, ucap, refcnt:nat}{dynamic:bool}{l:addr}
+    ( i: &Bs_minus_struct( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)?
+    ):<>
+    void
+  val (rpf | impl) = bs_takeout_struct( i)
+  val res = bs_build( rpf | impl)
+  prval () = deinit( i)
+}
+implement init( i, v) = {
+  extern castfn
+    explode
+    { len, offset, cap, ucap, refcnt:nat}{dynamic:bool}{l:addr}
+    ( i: Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
+    ):<>
+    ( ( size_t(len)
+      , size_t(offset)
+      , size_t(cap)
+      , size_t(ucap)
+      , size_t(refcnt)
+      , bool(dynamic)
+      , ptr(l)
+      )
+    )
+  val (rpf | impl) = bs_explode( v)
+  val _ = explode( i)
+  val () = i := bs_build( rpf | impl)
 }
 
 (*

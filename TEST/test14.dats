@@ -9,15 +9,15 @@ fn
   test(): $BS.BytestringNSH0 = bs where {
   val s = $BS.pack "hello"
   val s1 = $BS.pack " world"
-  val bs = $BS.appendC( s, s1)
+  val bs = s + s1
 }
 fn
-  test1(): $BS.BytestringNSH0 = bs where {
-  val (pf, fpf | p) = array_ptr_alloc<char>( i2sz 100)
-  val bs = $BS.pack ( pf, fpf | p, i2sz 0, i2sz 100)
-  val s = $BS.pack "hello"
-  val bs = $BS.appendC( bs, s)
-  val bs = $BS.appendC( bs, $BS.pack " world")
+  test1(): $BS.BytestringNSH0 = bs1 where {
+  var bs: $BS.Bytestring0
+  val () = bs := $BS.pack "hello world"
+  var bs1: $BS.Bytestring0
+  val () = bs1 := $BS.take1( i2sz 11, bs)
+  val () = $BS.decref_bs( bs, bs1) // consume bs and decref for bs1
 }
 
 implement main0() = {
