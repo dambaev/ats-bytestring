@@ -320,44 +320,39 @@ fn
 fn
   take
   {n:nat}
-  {len, offset, cap, ucap, refcnt: nat}{dynamic:bool}{l:addr}
+  {len, offset, cap, ucap, refcnt: nat | len >= n}{dynamic:bool}{l:addr}
   ( n: size_t n
   , i: &Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, ucap, refcnt + 1, dynamic, l)
   ):<!wrt>
-  [newl: nat | (n >= len && newl == len) || (n < len && newl == n)]
-  Bytestring_vtype( newl, offset, cap, 0, 1, dynamic, l)
+  Bytestring_vtype( n, offset, cap, 0, 1, dynamic, l)
   
 fn
   takeC
   {n:nat}
-  {len, offset, cap, ucap, refcnt: nat}{dynamic:bool}{l:addr}
+  {len, offset, cap, ucap, refcnt: nat | len >= n}{dynamic:bool}{l:addr}
   ( n: size_t n
   , i: Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
   ):<!wrt>
-  [newl, newucap: nat]
-  Bytestring_vtype( newl, offset, cap, newucap, refcnt, dynamic, l)
+  [newucap: nat | (n == len && newucap == ucap) || (n < len && newucap == 0)]
+  Bytestring_vtype( n, offset, cap, newucap, refcnt, dynamic, l)
 
 fn
   drop
   {n:nat}
-  {len, offset, cap, ucap, refcnt: nat}{dynamic:bool}{l:addr}
+  {len, offset, cap, ucap, refcnt: nat | len >= n}{dynamic:bool}{l:addr}
   ( n: size_t n
   , i: &Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, 0, refcnt + 1, dynamic, l)
   ):<!wrt>
-  #[newl: nat]
-  #[newoffset: nat]
-  Bytestring_vtype( newl, newoffset, cap, ucap, 1, dynamic, l)
+  Bytestring_vtype( len - n, offset + n, cap, ucap, 1, dynamic, l)
   
 fn
   dropC
   {n:nat}
-  {len, offset, cap, ucap, refcnt: nat}{dynamic:bool}{l:addr}
+  {len, offset, cap, ucap, refcnt: nat | len >= n}{dynamic:bool}{l:addr}
   ( n: size_t n
   , i: Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
   ):<!wrt>
-  [newl: nat]
-  [newoffset: nat]
-  Bytestring_vtype( newl, newoffset, cap, ucap, refcnt, dynamic, l)
+  Bytestring_vtype( len - n, offset + n, cap, ucap, refcnt, dynamic, l)
 
 fn
   println

@@ -96,49 +96,6 @@ extern fn
   [l:addr | (l_ucap >= r_len && l == l_p) || (l_len == 0 && l_ucap < r_len && l == r_p) || (l_len > 0 && l_ucap < r_len && l > null) ]
   Bytestring_vtype( l_len+r_len, offset, cap, ucap, 0, dynamic, l)
 
-extern fn
-  take_impl
-  {n:nat}
-  {len, offset, cap, ucap, refcnt: nat}{dynamic:bool}{l:addr}
-  ( n: size_t n
-  , i: &Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, ucap, refcnt + 1, dynamic, l)
-  ):<!wrt>
-  [newl: nat | (n <= len && newl == n) || (n > len && newl == len)]
-  Bytestring_vtype( newl, offset, cap, 0, 1, dynamic, l)
-  
-extern fn
-  takeC_impl
-  {n:nat}
-  {len, offset, cap, ucap, refcnt: nat}{dynamic:bool}{l:addr}
-  ( n: size_t n
-  , i: Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
-  ):<!wrt>
-  [newl: nat | (n < len && newl == n) || (n >= len && newl == len)]
-  [newucap: nat | (n < len && newucap == 0) || (n >= len && newucap == ucap) ]
-  Bytestring_vtype( newl, offset, cap, newucap, refcnt, dynamic, l)
-
-extern fn
-  drop_impl
-  {n:nat}
-  {len, offset, cap, ucap, refcnt: nat}{dynamic:bool}{l:addr}
-  ( n: size_t n
-  , i: &Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, 0, refcnt + 1, dynamic, l)
-  ):<!wrt>
-  #[newl: nat | (n <= len && newl == len - n) || (n > len && newl == 0)]
-  #[newoffset: nat | (n <= len && newoffset == offset + n) || (n > len && newoffset == 0)  ]
-  Bytestring_vtype( newl, newoffset, cap, ucap, 1, dynamic, l)
-  
-extern fn
-  dropC_impl
-  {n:nat}
-  {len, offset, cap, ucap, refcnt: nat}{dynamic:bool}{l:addr}
-  ( n: size_t n
-  , i: Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
-  ):<!wrt>
-  [newl: nat | (n < len && newl == len - n) || (n >= len && newl == 0)]
-  [newoffset: nat | (n < len && newoffset == offset + n) || (n >= len && newoffset == 0)  ]
-  Bytestring_vtype( newl, newoffset, cap, ucap, refcnt, dynamic, l)
-
 implement empty() = believeme( () | ( i2sz(0), i2sz(0), i2sz(0), i2sz(0), i2sz(0), false, the_null_ptr)) where {
   extern castfn
     believeme
@@ -692,53 +649,39 @@ implement eq_bytestring_bytestringC(l, r) = res where {
 implement neq_bytestring_bytestringC(l, r) = not( eq_bytestring_bytestringC( l, r))
   
   
-implement drop_impl(n, i) =
+implement drop(n, i) =
 let
   val res = ref_bs_child i
   val (rpf | impl) = bs_explode( res)
   val (len, offset, cap, ucap, refcnt, dynamic, p) = impl
 in
-  if n > len
-  then res where {
-    val res = bs_build( rpf | (i2sz 0, i2sz 0, cap, ucap, refcnt, dynamic, p))
-  }
-  else res where {
-    val res = bs_build( rpf | ( len - n, offset + n, cap, ucap, refcnt, dynamic, p))
-  }
+  bs_build( rpf | ( len - n, offset + n, cap, ucap, refcnt, dynamic, p))
 end
   
   
-implement dropC_impl( n, i) =
+implement dropC( n, i) =
 let
   val (rpf | (len, offset, cap, ucap, refcnt, dynamic, p)) = bs_explode( i)
 in
-  if n >= len
-  then bs_build( rpf | (i2sz 0, i2sz 0, cap, ucap, refcnt, dynamic, p))
-  else bs_build( rpf | ( len - n, offset + n, cap, ucap, refcnt, dynamic, p)) 
+  bs_build( rpf | ( len - n, offset + n, cap, ucap, refcnt, dynamic, p)) 
 end
 
-implement take_impl(n, i) =
+implement take(n, i) =
 let
   val res = ref_bs_parent i
   val (rpf | impl) = bs_explode( res)
   val (len, offset, cap, ucap, refcnt, dynamic, p) = impl
 in
-  if n > len
-  then res where {
-    val res = bs_build( rpf | (len, offset, cap, ucap, refcnt, dynamic, p))
-  }
-  else res where {
-    val res = bs_build( rpf | ( n, offset, cap, ucap, refcnt, dynamic, p))
-  }
+  bs_build( rpf | ( n, offset, cap, ucap, refcnt, dynamic, p))
 end
   
   
-implement takeC_impl( n, i) =
+implement takeC( n, i) =
 let
   val ( rpf | (len, offset, cap, ucap, refcnt, dynamic, p)) = bs_explode( i)
 in
-  if n >= len
-  then bs_build( rpf | (len, offset, cap, ucap, refcnt, dynamic, p))
+  if n = len
+  then bs_build( rpf | (n, offset, cap, ucap, refcnt, dynamic, p))
   else bs_build( rpf | (n, offset, cap, i2sz 0, refcnt, dynamic, p))
 end
 
@@ -861,14 +804,6 @@ implement appendC(l, r) = res where {
   prval () = lemma_bytestring_param( r)
   val res = appendC_impl( l, r)
 }
-
-implement take( n, i) = take_impl( n, i)
-
-implement takeC(n, i) = takeC_impl( n, i)
-
-implement drop(n, i) = drop_impl( n, i)
-
-implement dropC(n, i) = dropC_impl( n, i)
 
 implement get_char_at_uint( i, n) = uc2c res where {
   prval () = lemma_bytestring_param( i)
