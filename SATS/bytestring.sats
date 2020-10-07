@@ -324,7 +324,7 @@ fn
   ( n: size_t n
   , i: &Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, ucap, refcnt + 1, dynamic, l)
   ):<!wrt>
-  [newl: nat]
+  [newl: nat | newl == len || newl == n]
   Bytestring_vtype( newl, offset, cap, 0, 1, dynamic, l)
   
 fn
