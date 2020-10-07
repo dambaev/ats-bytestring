@@ -413,6 +413,37 @@ fn
   ):<!wrt>
   void
 
+fn
+  get_byte_at_uint
+  {n,len,offset,cap,ucap,refcnt: nat | n < len}{dynamic:bool}{l:addr}
+  ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
+  , n: size_t n
+  ):<>
+  uchar
+fn
+  get_byte_at_int
+  {n,len,offset,cap,ucap,refcnt: nat | n < len}{dynamic:bool}{l:addr}
+  ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
+  , n: int n
+  ):<>
+  uchar
+fn
+  get_char_at_uint
+  {n,len,offset,cap,ucap,refcnt: nat | n < len}{dynamic:bool}{l:addr}
+  ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
+  , n: size_t n
+  ):<>
+  char
+fn
+  get_char_at_int
+  {n,len,offset,cap,ucap,refcnt: nat | n < len}{dynamic:bool}{l:addr}
+  ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
+  , n: int n
+  ):<>
+  char
+
+overload [] with get_byte_at_uint
+overload [] with get_byte_at_int
 
 (* 
 

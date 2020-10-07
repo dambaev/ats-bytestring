@@ -34,14 +34,14 @@ extern castfn
   {n,offset,cap,ucap,refcnt:nat}{dynamic:bool}{l:addr}
   ( bs: Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l)
   ):<>
-  ( result_vb( l > null, void, (array_v(byte, l, cap), mfree_gc_v l))
+  ( result_vb( l > null, void, (array_v(uchar, l, cap), mfree_gc_v l))
   | Bytestring_impl(n, offset, cap, ucap, refcnt, dynamic, l)
   )
 
 extern castfn
   bs_build
   {n,offset,cap,ucap,refcnt:nat}{dynamic:bool}{l:addr}
-  ( result_vb( l > null, void, (array_v(byte, l, cap), mfree_gc_v l))
+  ( result_vb( l > null, void, (array_v(uchar, l, cap), mfree_gc_v l))
   | bs: Bytestring_impl(n, offset, cap, ucap, refcnt, dynamic, l)
   ):<> Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l)
 
@@ -50,14 +50,14 @@ extern castfn
   {n,offset,cap,ucap,refcnt:nat}{dynamic:bool}{l:addr}
   ( bs: !Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l) >> Bs_minus_struct( n, offset, cap, ucap, refcnt, dynamic, l)
   ):<>
-  ( result_vb( l > null, void, (array_v(byte, l, cap), mfree_gc_v l))
+  ( result_vb( l > null, void, (array_v(uchar, l, cap), mfree_gc_v l))
   | Bytestring_impl(n, offset, cap, ucap, refcnt, dynamic, l)
   )
 
 extern praxi
   bs_takeback_struct
   {n,offset,cap,ucap,refcnt: nat}{l:addr}{dynamic:bool}
-  ( result_vb( l > null, void, (array_v(byte,l,cap), mfree_gc_v l))
+  ( result_vb( l > null, void, (array_v(uchar,l,cap), mfree_gc_v l))
   | bs: !Bs_minus_struct( n, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( n, offset, cap, ucap, refcnt, dynamic, l)
   ):<> void
 
@@ -206,7 +206,7 @@ implement free_dynamic(i) = {
     ( i: Bytestring_vtype( len, offset, cap, ucap, 0, true, l)
     ):<>
     [n:nat]
-    ( array_v(byte,l,cap), mfree_gc_v l | Bytestring_impl( len, offset, cap, ucap, 0, true, l))
+    ( array_v(uchar,l,cap), mfree_gc_v l | Bytestring_impl( len, offset, cap, ucap, 0, true, l))
   val (pf , fpf | (len, offset, cap, _, _, _, ptr)) = takeout( i)
   val () = array_ptr_free( pf, fpf | ptr)
 }
@@ -233,7 +233,7 @@ implement is_shared(i) = refcnt > 0 where {
 extern fn
   memcmp
   {a:t0ype}
-  { sizeof(a) == sizeof(char) || sizeof(a) == sizeof(byte)}
+  { sizeof(a) == sizeof(char) || sizeof(a) == sizeof(byte) || sizeof(a) == sizeof(uchar)}
   { n,cap1,cap2:pos
   | n <= cap1 && n <= cap2
   }
@@ -248,7 +248,7 @@ extern fn
 fn
   {a:viewt0ype}
   ptr1_add_sz
-  {l:agz}{n:nat}{sizeof(a) == sizeof(char) || sizeof(a) == sizeof(byte)}
+  {l:agz}{n:nat}{sizeof(a) == sizeof(char) || sizeof(a) == sizeof(byte) || sizeof(a) == sizeof(uchar)}
   ( i: ptr l
   , n: size_t n
   ):<>
@@ -290,13 +290,13 @@ in
     prval () = bs_takeback_struct( r_rpf | r)
     prval () = bs_takeback_struct( l_rpf | l)
   }
-  | sizeof<byte> <= 0 => false where {
+  | sizeof<uchar> <= 0 => false where {
     prval () = bs_takeback_struct( r_rpf | r)
     prval () = bs_takeback_struct( l_rpf | l)
   }
   | _ => ret where {
-    val r_ptr = ptr1_add_sz<byte>( r_p, r_offset)
-    val l_ptr = ptr1_add_sz<byte>( l_p, l_offset)
+    val r_ptr = ptr1_add_sz<uchar>( r_p, r_offset)
+    val l_ptr = ptr1_add_sz<uchar>( l_p, l_offset)
     prval succ_vb( rpf ) = r_rpf
     prval (r_pf, r_fpf) = rpf
     prval (r_pf1, r_pf2) = array_v_split_at( r_pf | r_offset)
@@ -512,7 +512,7 @@ in
     prval ( l_pf0, l_fpf) = l_pf
     prval (l_pf1, l_pf2) = array_v_split_at( l_pf0 | l_offset)
     prval (l_pf21, l_pf22) = array_v_split_at( l_pf2 | l_len)
-    val l_ptr = ptr1_add_sz<byte>( l_p, l_offset)
+    val l_ptr = ptr1_add_sz<uchar>( l_p, l_offset)
 
     val () = memcpy( res_pf1, l_pf21 | res_p, l_ptr, l_len)
     
@@ -521,11 +521,11 @@ in
     prval () = l_rpf := succ_vb( (l_pf0, l_fpf))
     prval () = bs_takeback_struct( l_rpf | l)
     
-    val res_ptr = ptr1_add_sz<byte>( res_p, l_len)
+    val res_ptr = ptr1_add_sz<uchar>( res_p, l_len)
     
     val (r_rpf | impl) = bs_takeout_struct( r)
     val (r_len, r_offset, r_cap, r_ucap, r_refcnt, r_dynamic, r_p) = impl
-    val r_ptr = ptr1_add_sz<byte>( r_p, r_offset)
+    val r_ptr = ptr1_add_sz<uchar>( r_p, r_offset)
     prval succ_vb( r_pf) = r_rpf
     prval (r_pf0, r_fpf) = r_pf
     prval (r_pf1, r_pf2) = array_v_split_at( r_pf0 | r_offset)
@@ -558,7 +558,7 @@ in
     prval (pf1, pf2) = array_v_split_at( pf | res_offset)
     prval (pf21, pf22) = array_v_split_at( pf2 | res_len)
     prval (pf221, pf222) = array_v_split_at( pf22 | r_len)
-    val res_ptr = ptr1_add_sz<byte>( res_p, res_offset + res_len)
+    val res_ptr = ptr1_add_sz<uchar>( res_p, res_offset + res_len)
     
     val (r_rpf | r_impl) = bs_takeout_struct( r)
     val (r_len, r_offset, r_cap, r_ucap, r_refcnt, r_dynamic, r_p) = r_impl
@@ -567,7 +567,7 @@ in
     prval ( r_pf, r_fpf) = r_pf0
     prval ( r_pf1, r_pf2) = array_v_split_at( r_pf |  r_offset)
     prval ( r_pf21, r_pf22) = array_v_split_at( r_pf2 | r_len)
-    val r_ptr = ptr1_add_sz<byte>( r_p, r_offset)
+    val r_ptr = ptr1_add_sz<uchar>( r_p, r_offset)
     
     val () = memcpy( pf221, r_pf21 | res_ptr, r_ptr, r_len)
     
@@ -869,6 +869,66 @@ implement takeC(n, i) = takeC_impl( n, i)
 implement drop(n, i) = drop_impl( n, i)
 
 implement dropC(n, i) = dropC_impl( n, i)
+
+implement get_char_at_uint( i, n) = uc2c res where {
+  prval () = lemma_bytestring_param( i)
+  val (rpf | impl) = bs_takeout_struct( i)
+  val (len,offset,cap,ucap,refcnt,dynamic,p) = impl
+  prval succ_vb( pf0) = rpf
+  prval (pf, fpf) = pf0
+  prval (pf1, pf2) = array_v_split_at( pf | offset + n)
+  prval (pf21, pf22) = array_v_uncons( pf2)
+  val ptr = ptr_add<uchar>( p, offset + n)
+  val res = !ptr
+  prval () = pf2 := array_v_cons( pf21, pf22)
+  prval () = pf := array_v_unsplit( pf1, pf2)
+  prval () = bs_takeback_struct( succ_vb((pf, fpf)) | i)
+}
+
+implement get_char_at_int( i, n) = uc2c res where {
+  prval () = lemma_bytestring_param( i)
+  val (rpf | impl) = bs_takeout_struct( i)
+  val (len,offset,cap,ucap,refcnt,dynamic,p) = impl
+  prval succ_vb( pf0) = rpf
+  prval (pf, fpf) = pf0
+  prval (pf1, pf2) = array_v_split_at( pf | offset + n)
+  prval (pf21, pf22) = array_v_uncons( pf2)
+  val ptr = ptr_add<uchar>( p, offset + n)
+  val res = !ptr
+  prval () = pf2 := array_v_cons( pf21, pf22)
+  prval () = pf := array_v_unsplit( pf1, pf2)
+  prval () = bs_takeback_struct( succ_vb((pf, fpf)) | i)
+}
+implement get_byte_at_uint( i, n) = res where {
+  prval () = lemma_bytestring_param( i)
+  val (rpf | impl) = bs_takeout_struct( i)
+  val (len,offset,cap,ucap,refcnt,dynamic,p) = impl
+  prval succ_vb( pf0) = rpf
+  prval (pf, fpf) = pf0
+  prval (pf1, pf2) = array_v_split_at( pf | offset + n)
+  prval (pf21, pf22) = array_v_uncons( pf2)
+  val ptr = ptr_add<uchar>( p, offset + n)
+  val res = !ptr
+  prval () = pf2 := array_v_cons( pf21, pf22)
+  prval () = pf := array_v_unsplit( pf1, pf2)
+  prval () = bs_takeback_struct( succ_vb((pf, fpf)) | i)
+}
+
+implement get_byte_at_int( i, n) = res where {
+  prval () = lemma_bytestring_param( i)
+  val (rpf | impl) = bs_takeout_struct( i)
+  val (len,offset,cap,ucap,refcnt,dynamic,p) = impl
+  prval succ_vb( pf0) = rpf
+  prval (pf, fpf) = pf0
+  prval (pf1, pf2) = array_v_split_at( pf | offset + n)
+  prval (pf21, pf22) = array_v_uncons( pf2)
+  val ptr = ptr_add<uchar>( p, offset + n)
+  val res = !ptr
+  prval () = pf2 := array_v_cons( pf21, pf22)
+  prval () = pf := array_v_unsplit( pf1, pf2)
+  prval () = bs_takeback_struct( succ_vb((pf, fpf)) | i)
+}
+
 
 (*
   
