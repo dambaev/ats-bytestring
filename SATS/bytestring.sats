@@ -49,7 +49,7 @@ vtypedef
   
 vtypedef
   BytestringNSH0 =
-  [len: nat][offset,cap,ucap:nat][dynamically_allocated:bool][l:agz]
+  [len: nat][offset,cap,ucap:nat][dynamically_allocated:bool][l:addr]
   Bytestring_vtype( len, offset, cap, ucap, 0, dynamically_allocated,l)
 
 vtypedef
