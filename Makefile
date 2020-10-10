@@ -59,7 +59,8 @@ test: \
 		test12 \
 		test13 \
 		test14 \
-		test15
+		test15 \
+		test16
 
 test1: $(ATS_OBJS)
 	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/test1.dats $(ATSLIBS)
@@ -91,6 +92,8 @@ test14: $(ATS_OBJS)
 	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/test14.dats $(ATSLIBS)
 test15: $(ATS_OBJS)
 	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/test15.dats $(ATSLIBS)
+test16: $(ATS_OBJS)
+	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/test16.dats $(ATSLIBS)
 cleanall:: ; $(RMF) test*
 #
 ######

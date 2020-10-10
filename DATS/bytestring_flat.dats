@@ -134,7 +134,7 @@ let
     string2ptr_
     {n:nat}
     ( s: string(n)
-    ):
+    ):<>
     [l:agz]
     ptr l
   val p = string2ptr_ s
@@ -864,6 +864,88 @@ implement get_byte_at_int( i, n) = res where {
   prval () = bs_takeback_struct( succ_vb((pf, fpf)) | i)
 }
 
+
+implement {env}take_while(env, f, i) = result where {
+  fun
+    loop
+    {len, offset, cap, ucap, refcnt, n: nat | n <= len}{dynamic:bool}{l:addr}
+    .<len - n>.
+    ( i: size_t n
+    , sz: size_t len
+    , s: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
+    , env: !env
+    ):<!wrt>
+    [on: nat | on <=len]
+    size_t(on) =
+  if i = sz
+  then i where {
+    prval () = prop_verify {len == n}()
+  }
+  else
+    if not (f( env, s[i]))
+    then i
+    else loop( i + i2sz 1, sz, s, env)
+  val idx = loop( i2sz 0, length i, i, env)
+  val result = take( idx, i)
+}
+
+implement split_on( delim, i) = result where {
+  fun
+    loop
+    {len, offset, cap, ucap, refcnt: nat}{dynamic:bool}{l:addr}
+    {n,ln: nat}
+    .<n>.
+    ( i: size_t n
+    , acc: list_vt( [llen, loffset:nat] Bytestring_vtype(llen, loffset, cap, 0, 1, dynamic,l), ln)
+    , s: &Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( olen, ooffset, cap, ucap, refcnt + (oln - ln), dynamic, l)
+    ):<!wrt>
+    #[olen,ooffset,oln: nat]
+    list_vt([olen1, ooffset1:nat] Bytestring_vtype(olen1, ooffset1, cap, 0, 1, dynamic, l), oln) =
+  let
+    val s_sz = length s
+    val head = take_while<uchar>( delim, lam (env, x) =<> x != env, s)
+    val head_sz = length head
+  in
+    if i = i2sz 0
+    then acc where {
+      val () = free( head, s)
+    }
+    else 
+    ifcase
+    | head_sz > s_sz => acc where { (* should not happen, but need to prove, that head <= s *)
+      val () = free( head, s)
+    }
+    | s_sz = 0 => list_vt_cons( head, acc)
+    | head_sz = s_sz => loop( i - i2sz 1, newacc, s) where {
+      val () = s := dropC( head_sz, s)
+      val newacc = list_vt_cons( head, acc)
+    }
+    | _ => loop( i - i2sz 1, list_vt_cons( head, acc), s) where {
+      val () = s := dropC( head_sz + i2sz 1, s)
+    }
+  end
+  val ( rpf | impl) = bs_takeout_struct( i)
+  val (len, offset, cap, ucap, refcnt, dynamic, p) = impl
+  prval () = bs_takeback_struct( rpf | i)
+  val result = list_vt_reverse( loop( length i, list_vt_nil(), i)) 
+  val ( rpf | impl) = bs_explode( i)
+  val () = i := bs_build( rpf | (len, offset, cap, ucap, refcnt + length result, dynamic, p))
+}
+
+implement copy( i) =
+let
+  prval () = lemma_bytestring_param( i)
+in
+  if capacity i = 0
+  then empty()
+  else result where {
+    val ( i_pf | i_p, i_sz) = bs2bytes( i)
+    val ( pf, fpf | p) = array_ptr_alloc<uchar>(i_sz)
+    val () = memcpy( pf, i_pf | p, i_p, i_sz)
+    prval () = bytes_addback( i_pf | i)
+    val result = pack( pf, fpf | p, i_sz, i_sz)
+  }
+end
 
 (*
   

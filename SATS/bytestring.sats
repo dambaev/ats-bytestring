@@ -79,7 +79,7 @@ fn
   pack_string
   {n:nat}
   ( s: string(n)
-  ):
+  ):<!wrt>
   [l:agz]
   Bytestring_vtype(n,0,n,0,0,false,l)
 
@@ -93,7 +93,7 @@ fn
   | i: ptr l
   , sz: size_t n
   , capacity: size_t cap
-  ):
+  ):<!wrt>
   Bytestring_vtype( n, 0, cap, cap - n, 0, false, l)
 
 overload pack with pack_chars_static
@@ -106,7 +106,7 @@ fn
   | i: ptr l
   , sz: size_t n
   , capacity: size_t cap
-  ):
+  ):<!wrt>
   Bytestring_vtype( n, 0, cap, cap - n, 0, true, l)
 
 overload pack with pack_chars_dynamic
@@ -375,6 +375,15 @@ fn
   , size_t(n)
   )
 
+praxi
+  bytes_addback
+  {n,offset,cap,ucap,refcnt: nat | cap > 0}{dynamic:bool}{l, l1:addr}
+  ( bytes(n) @ l1
+  | i: !minus_vt( Bytestring_vtype( n, offset, cap, ucap, refcnt, dynamic, l), bytes(n) @ l1) >> Bytestring_vtype( n, offset, cap, ucap, refcnt, dynamic, l)
+  ):<>
+  void
+  
+
 fn
   take1
   {len,offset,cap,ucap,refcnt,n: nat}{dynamic:bool}{l:addr}
@@ -440,6 +449,35 @@ fn
 overload [] with get_byte_at_uint
 overload [] with get_byte_at_int
 
+fn
+  split_on
+  {len,offset,cap,ucap,refcnt: nat}{dynamic:bool}{l:addr}
+  ( delim: uchar
+  , i: &Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, ucap, refcnt + cnt, dynamic, l)
+  ):<!wrt>
+  #[cnt:nat]
+  list_vt( [olen, ooffset:nat] Bytestring_vtype( olen, ooffset, cap, 0, 1, dynamic, l), cnt)
+
+fn
+  {env:viewt0ype}
+  take_while
+  {len, offset, cap, ucap, refcnt: nat}{dynamic:bool}{l:addr}
+  ( env: !env >> _
+  , f: (!env, uchar)-<> bool
+  , i: &Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, ucap, refcnt + 1, dynamic, l)
+  ):<!wrt>
+  [olen, ooffset: nat]
+  Bytestring_vtype( olen, ooffset, cap, 0, 1, dynamic, l)
+ 
+fn
+  copy
+  {len,offset,cap,ucap,refcnt: nat}{dynamic:bool}{l:addr}
+  ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) 
+  ):<!wrt>
+  [l1:addr | ( l > null && l1 > null) || l1 == null ]
+  [odynamic: bool | ( l > null && odynamic == true) || odynamic == false]
+  Bytestring_vtype( len, 0, len, 0, 0, odynamic, l1)
+  
 (* 
 
  
