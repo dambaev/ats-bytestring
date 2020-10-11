@@ -368,6 +368,12 @@ in
   }
 end
 
+implement reference_count(i) = refcnt where {
+  prval () = lemma_bytestring_param( i)
+  val ( rpf | (_, _, _, _, refcnt, _, _)) = bs_takeout_struct( i)
+  prval () = bs_takeback_struct( rpf | i)
+}
+
 implement capacity(i) = cap where {
   prval () = lemma_bytestring_param( i)
   val ( rpf | (_, _, cap, _, _, _, _)) = bs_takeout_struct( i)

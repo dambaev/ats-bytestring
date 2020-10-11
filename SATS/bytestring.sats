@@ -246,6 +246,12 @@ fn
 overload + with appendC
 
 fn
+  reference_count
+  { len, offset, cap, ucap, refcnt:nat}{dynamic:bool}{l:addr}
+  ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
+  ):<> size_t( refcnt)
+
+fn
   capacity
   { len, offset, cap, ucap, refcnt:nat}{dynamic:bool}{l:addr}
   ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
