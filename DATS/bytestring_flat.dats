@@ -917,18 +917,17 @@ implement split_on( delim, i) = result where {
       val () = free( head, s)
     }
     else 
-    ifcase
-    | head_sz > s_sz => acc where { (* should not happen, but need to prove, that head <= s *)
-      val () = free( head, s)
-    }
-    | s_sz = 0 => list_vt_cons( head, acc)
-    | head_sz = s_sz => loop( i - i2sz 1, newacc, s) where {
-      val () = s := dropC( head_sz, s)
-      val newacc = list_vt_cons( head, acc)
-    }
-    | _ => loop( i - i2sz 1, list_vt_cons( head, acc), s) where {
-      val () = s := dropC( head_sz + i2sz 1, s)
-    }
+      ifcase
+      | head_sz > s_sz => acc where { (* should not happen, but need to prove, that head <= s *)
+        val () = free( head, s)
+      }
+      | s_sz = 0 => list_vt_cons( head, acc)
+      | head_sz = s_sz => list_vt_cons( head, acc) where {
+        val () = s := dropC( head_sz, s)
+      }
+      | _ => loop( i - i2sz 1, list_vt_cons( head, acc), s) where {
+        val () = s := dropC( head_sz + i2sz 1, s)
+      }
   end
   val ( rpf | impl) = bs_takeout_struct( i)
   val (len, offset, cap, ucap, refcnt, dynamic, p) = impl

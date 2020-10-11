@@ -11,7 +11,7 @@ extern castfn
   ( i: char(c)
   ):<> uchar(c)
 
-implement main0() = {
+fn test0():void = {
   var s: $BS.Bytestring0?
   val () = s := $BS.pack "abacada"
   var elements: List_vt($BS.Bytestring0)?
@@ -37,8 +37,38 @@ implement main0() = {
   val () = assertloc( eq_bytestring_bytestringC( v, $BS.empty()))
   val () = $BS.free( v, s)
 
-  val () = __free( elements) where {
-    extern castfn __free( i: List_vt( $BS.Bytestring0)): void
-  }
+  val ~list_vt_nil() = elements
   val () = $BS.free( s)
+}
+
+fn test1(): void = {
+  var s: $BS.Bytestring0?
+  val () = s := $BS.pack "bbb"
+  var elements: List_vt($BS.Bytestring0)?
+  val () = elements := $BS.split_on( c2uc 'a', s)
+  val () = assertloc( list_vt_length( elements) = 1)
+
+  val v = list_vt_takeout_at( elements, 0)
+  val () = assertloc( eq_bytestring_bytestringC( v, $BS.pack "bbb"))
+  val () = $BS.free( v, s)
+
+  val ~list_vt_nil() = elements
+  val () = $BS.free( s)
+}
+
+fn test2(): void = {
+  var s: $BS.Bytestring0?
+  val () = s := $BS.pack ""
+  var elements: List_vt($BS.Bytestring0)?
+  val () = elements := $BS.split_on( c2uc 'a', s)
+  val () = assertloc( list_vt_length( elements) = 0)
+
+  val ~list_vt_nil() = elements
+  val () = $BS.free( s)
+}
+
+implement main0() = {
+  val () = test0()
+  val () = test1()
+  val () = test2()
 }
