@@ -470,6 +470,28 @@ praxi
   | i: !minus_vt( Bytestring_vtype( n, offset, cap, ucap, refcnt, dynamic, l), bytes(n) @ l1) >> Bytestring_vtype( n, offset, cap, ucap, refcnt, dynamic, l)
   ):<>
   void
+
+(* O(1) *)
+fn
+  bs2unused_bytes
+  {n,offset,cap,ucap,refcnt: nat | ucap > 0}{dynamic:bool}{l:agz}
+  ( i: !Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l) >> minus_vt( Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l), bytes(ucap) @ l1)
+  ):<>
+  #[l1:agz]
+  ( bytes(ucap) @ l1
+  | ptr l1
+  , size_t(ucap)
+  )
+
+(* O(1) *)
+fn
+  unused_bytes_addback
+  {n,offset,cap,ucap,refcnt,used_bytes: nat | ucap > 0; used_bytes <= ucap}{dynamic:bool}{l, l1:agz}
+  ( bytes(ucap) @ l1
+  | i: &minus_vt( Bytestring_vtype( n, offset, cap, ucap, refcnt, dynamic, l), bytes(ucap) @ l1) >> Bytestring_vtype( n + used_bytes, offset, cap, ucap - used_bytes, refcnt, dynamic, l)
+  , used_bytes: size_t( used_bytes)
+  ):<!wrt>
+  void
   
 
 (* O(1)

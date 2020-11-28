@@ -631,6 +631,37 @@ implement bs2bytes{n,offset,cap,ucap,refcnt}{dynamic}{l}(i) = ret where {
   val ret = ( believeme(i, ptr) | ptr, len)
 }
 
+implement bs2unused_bytes{n,offset,cap,ucap,refcnt}{dynamic}{l}(i) = ret where {
+  prval () = lemma_bytestring_param(i)
+  val (rpf | impl) = bs_takeout_struct(i)
+  val (len, offset, cap, ucap, refcnt, dynamic, p) = impl
+  prval succ_vb( pf0) = rpf
+  prval (pf, fpf) = pf0
+  val ptr = ptr1_add_sz<char>( p, offset + len)
+  prval () = rpf := succ_vb( (pf, fpf))
+
+  prval () = bs_takeback_struct( rpf | i)
+  extern prfun
+    believeme
+    {l1:agz}
+    ( i: !Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l) >> minus_vt( Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l), bytes(ucap) @ l1)
+    , ptr l1
+    ): ( bytes(ucap) @ l1)
+  val ret = ( believeme(i, ptr) | ptr, ucap)
+}
+
+implement unused_bytes_addback{n,offset,cap,ucap,refcnt,used_bytes}{dynamic}{l,l1}( pf | i, used_bytes) = {
+  extern prfun
+    believeme
+    ( pf: bytes(ucap) @ l1
+    | i: !minus_vt( Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l), bytes(ucap) @ l1) >> Bytestring_vtype( n, offset, cap, ucap, refcnt, dynamic, l)
+    ):<> void
+  prval () = believeme( pf | i)
+  val (pf | impl) = bs_explode( i)
+  val (len, offset, cap, ucap, refcnt, dynamic, p) = impl
+  val () = i := bs_build( pf | (len + used_bytes, offset, cap, ucap - used_bytes, refcnt, dynamic, p))
+}
+
 implement take1(n, i) =
 let
   extern castfn
@@ -851,3 +882,4 @@ in
     val result = pack( pf, fpf | p, i_sz, i_sz)
   }
 end
+
