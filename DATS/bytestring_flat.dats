@@ -674,17 +674,6 @@ implement decref_bs( consume, preserve) = {
   val (len, offset, cap, ucap, refcnt, dynamic, p) = impl
   val () = preserve := bs_build( rpf | (len, offset, cap, ucap, refcnt - 1, dynamic, p))
 }
-implement deref( i) = res where {
-  extern castfn
-    deinit
-    { len, offset, cap, ucap, refcnt:nat}{dynamic:bool}{l:addr}
-    ( i: &Bs_minus_struct( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)?
-    ):<>
-    void
-  val (rpf | impl) = bs_takeout_struct( i)
-  val res = bs_build( rpf | impl)
-  prval () = deinit( i)
-}
 
 implement growC(l, r) = res where {
   prval () = lemma_bytestring_param( l)

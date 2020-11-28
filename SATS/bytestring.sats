@@ -486,15 +486,6 @@ fn
 (* O(1)
  *)
 fn
-  deref
-  {len,offset,cap,ucap,refcnt: nat}{dynamic:bool}{l:addr}
-  ( consume: &Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)?
-  ):<!wrt>
-  Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
-  
-(* O(1)
- *)
-fn
   decref_bs
   {c_len,c_offset,cap,c_ucap: nat}{dynamic:bool}{l:addr}
   {p_len,p_offset,p_ucap,p_refcnt: nat | p_refcnt > 0}
