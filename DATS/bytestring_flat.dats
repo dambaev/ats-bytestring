@@ -61,28 +61,6 @@ extern praxi
   | bs: !Bs_minus_struct( n, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( n, offset, cap, ucap, refcnt, dynamic, l)
   ):<> void
 
-extern fn
-  append_impl
-  {l_len, l_offset, l_cap, l_ucap, l_refcnt: nat | l_len > 0}{l_dynamic:bool}{l_p:agz}
-  {r_len, r_offset, r_cap, r_ucap, r_refcnt: nat | r_len > 0}{r_dynamic:bool}{r_p:agz}
-  ( l: !Bytestring_vtype(l_len, l_offset, l_cap, l_ucap, l_refcnt, l_dynamic, l_p)
-  , r: !Bytestring_vtype(r_len, r_offset, r_cap, r_ucap, r_refcnt, r_dynamic, r_p)
-  ):<!wrt>
-  [l:addr | l > null ]
-  Bytestring_vtype( l_len+r_len, 0, l_len+r_len, 0, 0, true, l)
-
-(* the same as append, but consumes arguments in order to make caller's code clear from bunch of val's and free()
- *)
-extern fn
-  appendC_impl
-  {l_len, l_offset, l_cap, l_ucap: nat | l_len > 0}{l_dynamic:bool}{l_p:agz}
-  {r_len, r_offset, r_cap, r_ucap: nat | r_len > 0}{r_dynamic:bool}{r_p:agz}
-  ( l: Bytestring_vtype(l_len, l_offset, l_cap, l_ucap, 0, l_dynamic, l_p)
-  , r: Bytestring_vtype(r_len, r_offset, r_cap, r_ucap, 0, r_dynamic, r_p)
-  ):<!wrt>
-  [l:addr | l > null ]
-  Bytestring_vtype( l_len+r_len, 0, l_len+r_len, 0, 0, true, l)
-
 implement empty() = believeme( () | ( i2sz(0), i2sz(0), i2sz(0), i2sz(0), i2sz(0), false, the_null_ptr)) where {
   extern castfn
     believeme
@@ -324,12 +302,12 @@ in
 end
   
 implement 
-  appendC_impl
+  appendC
   {l_len, l_offset, l_cap, l_ucap}{l_dynamic}{l_p}
   {r_len, r_offset, r_cap, r_ucap}{r_dynamic}{r_p}
   ( l, r) = res where {
   var res: Bytestring0?
-  val () = res := append_impl( l, r)
+  val () = res := append( l, r)
   val () = free r
   val () = free l
 }
@@ -384,7 +362,7 @@ extern fn
   , sz: size_t n1
   ):<!wrt> void = "mac#memcpy"
 
-implement append_impl
+implement append
   {l_len, l_offset, l_cap, l_ucap, l_refcnt}{l_dynamic}{l_p}
   {r_len, r_offset, r_cap, r_ucap, r_refcnt}{r_dynamic}{r_p}
   (l, r) =
@@ -469,43 +447,6 @@ in
     val (res_len, res_offset, res_cap, res_ucap, res_refcnt, res_dynamic, res_l) = explode( res)
     val res = build( () | ( l_len + r_len, res_offset, res_cap, res_ucap - l_len - r_len, res_refcnt, res_dynamic, res_l))
   }
-  (* reuse l's unused capacity *)
-(*  | _ => res where {
-    prval () = prop_verify {l_ucap >= r_len}()
-    val res = ref_bs_child l
-    val ( rpf | impl) = bs_takeout_struct( res)
-    val (res_len, res_offset, res_cap, res_ucap, res_refcnt, res_dynamic, res_p) = impl
-    prval succ_vb( rpf0 ) = rpf
-    prval (pf, fpf) = rpf0
-    prval (pf1, pf2) = array_v_split_at( pf | res_offset)
-    prval (pf21, pf22) = array_v_split_at( pf2 | res_len)
-    prval (pf221, pf222) = array_v_split_at( pf22 | r_len)
-    val res_ptr = ptr1_add_sz<uchar>( res_p, res_offset + res_len)
-    
-    val (r_rpf | r_impl) = bs_takeout_struct( r)
-    val (r_len, r_offset, r_cap, r_ucap, r_refcnt, r_dynamic, r_p) = r_impl
-    
-    prval succ_vb( r_pf0) = r_rpf
-    prval ( r_pf, r_fpf) = r_pf0
-    prval ( r_pf1, r_pf2) = array_v_split_at( r_pf |  r_offset)
-    prval ( r_pf21, r_pf22) = array_v_split_at( r_pf2 | r_len)
-    val r_ptr = ptr1_add_sz<uchar>( r_p, r_offset)
-    
-    val () = memcpy( pf221, r_pf21 | res_ptr, r_ptr, r_len)
-    
-    prval () = r_pf2 := array_v_unsplit( r_pf21, r_pf22)
-    prval () = r_pf := array_v_unsplit( r_pf1, r_pf2)
-    
-    prval () = pf22 := array_v_unsplit( pf221, pf222)
-    prval () = pf2 := array_v_unsplit( pf21, pf22)
-    prval () = pf := array_v_unsplit( pf1, pf2)
-    
-    prval () = bs_takeback_struct( succ_vb( (r_pf, r_fpf)) | r)
-    prval () = bs_takeback_struct( succ_vb( (pf, fpf)) | res)
-    val (res_len, res_offset, res_cap, res_ucap, res_refcnt, res_dynamic, res_p) = explode( res)
-    val res = build( () | (res_len + r_len, res_offset, res_cap, res_ucap - r_len, res_refcnt, res_dynamic, res_p))
-  }
-*)
 end
 
 implement ref_bs_child( i) = res where {
@@ -745,18 +686,6 @@ implement deref( i) = res where {
   prval () = deinit( i)
 }
 
-implement append(l, r) = res where {
-  prval () = lemma_bytestring_param( l)
-  prval () = lemma_bytestring_param( r)
-  val res = append_impl( l, r)
-}
-
-implement appendC(l, r) = res where {
-  prval () = lemma_bytestring_param( l)
-  prval () = lemma_bytestring_param( r)
-  val res = appendC_impl( l, r)
-}
-
 implement growC(l, r) = res where {
   prval () = lemma_bytestring_param( l)
   prval () = lemma_bytestring_param( r)
@@ -933,61 +862,3 @@ in
     val result = pack( pf, fpf | p, i_sz, i_sz)
   }
 end
-
-(*
-  
-fn
-  string2pfptr
-  {n:pos}
-  ( s: string(n)
-  ):
-  [l: agz]
-  ( array_v( char, l, n)
-  , array_v( char, l, n) -<prf> void
-  | ptr l
-  ) = (pf, fpf | ret) where {
-  extern prfun
-    string2pf
-    {n:pos}{l:agz}
-    ( s: string(n)
-    , ptr l
-    ):
-    ( array_v( char, l, n)
-    , array_v( char, l, n) -<prf> void
-    )
-  val ret = string2ptr(s)
-  prval (pf, fpf) = string2pf(s, ret)
-}
-
-
-implement bs2ptr(i) = ret where {
-  prval () = lemma_bytestring_param(i)
-  val (rpf | impl) = bs_takeout_struct(i)
-  val (_, offset, _, tuple) = impl
-  prval succ_vb( pf) = rpf
-  prval (tuple_pf, t_fpf, pf, fpf) = pf
-  val (unused_offset, recfnt, p) = !tuple
-  val ret = ptr_add<char>( p, offset)
-  prval () = rpf := succ_vb( (tuple_pf, t_fpf, pf, fpf))
-  
-  prval () = bs_takeback_struct( rpf | i)
-  val () = assertloc( ptr_isnot_null ret)
-}
-
-implement bs2string{n,cap}(i) = ret where {
-  prval () = lemma_bytestring_param(i)
-  val (rpf | impl) = bs_takeout_struct(i)
-  prval () = lemma_bytestring_impl_param(impl)
-  val (_, offset, _, tuple) = impl
-  prval succ_vb( pf) = rpf
-  prval (tuple_pf, t_fpf, pf, fpf) = pf
-  val (unused_offset, recfnt, p) = !tuple
-  extern castfn believeme{l:addr}( i: ptr l): string(n)
-  val ret = believeme(ptr_add<char>(p, offset))
-  prval () = rpf := succ_vb( (tuple_pf, t_fpf, pf, fpf))
-  
-  prval () = bs_takeback_struct( rpf | i)
-}
-
-
-*)
