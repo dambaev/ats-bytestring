@@ -68,13 +68,17 @@ prfun
   [ ( n > 0 && l > null); (cap > 0 && l > null); (l > null && n >= 0); n+offset <= cap; offset+n+ucap <= cap ] (* n should not exceed capacity *)
   void
 
-(* creates an empty bytestring *)
+(* O(1)
+  creates an empty bytestring
+ *)
 fn
   empty
   (
   ):<>
   Bytestring_vtype(0,0,0,0,0,false,null)
 
+(* O(1)
+ *)
 fn
   pack_string
   {n:nat}
@@ -86,6 +90,8 @@ fn
 symintr pack
 overload pack with pack_string
 
+(* O(1)
+ *)
 fn
   pack_chars_static
   {n,cap:nat | cap >= n}{l:agz}{a:t0ype}
@@ -98,6 +104,8 @@ fn
 
 overload pack with pack_chars_static
 
+(* O(1)
+ *)
 fn
   pack_chars_dynamic
   {n,cap:nat | cap >= n}{l:agz}{a:t0ype}
@@ -111,17 +119,24 @@ fn
 
 overload pack with pack_chars_dynamic
 
+(* O(1)
+ *)
 fn
   free_static
   {len, offset, cap, ucap: nat}{l:addr}
   ( v: Bytestring_vtype(len, offset, cap, ucap, 0, false, l)
   ):<> void
+
+(* O(1)
+ *)
 fn
   free_dynamic
   {len, offset, cap, ucap: nat}{l:addr}
   ( v: Bytestring_vtype(len, offset, cap, ucap, 0, true, l)
   ):<!wrt> void
 
+(* O(1)
+ *)
 fn
   free_bs
   {len, offset, cap, ucap: nat}{dynamic:bool}{l:addr}
@@ -131,6 +146,8 @@ fn
 symintr free
 overload free with free_bs
 
+(* O(1)
+ *)
 fn
   free_static_array
   {a:t0ype}
@@ -141,6 +158,8 @@ fn
 
 overload free with free_static_array
 
+(* O(1)
+ *)
 fn
   unref_bs
   {r_len, r_offset, r_cap, r_ucap: nat}{r_dynamic:bool}{l:addr}
@@ -153,24 +172,32 @@ fn
 
 overload free with unref_bs
 
+(* O(1)
+ *)
 fn
   isnot_shared
   {len,offset,cap,ucap,refcnt:nat}{dynamic:bool}{l:addr}
   ( i: !Bytestring_vtype(len,offset,cap,ucap,refcnt,dynamic,l)
   ):<> bool( refcnt == 0)
 
+(* O(1)
+ *)
 fn
   is_shared
   {len,offset,cap,ucap,refcnt:nat}{dynamic:bool}{l:addr}
   ( i: !Bytestring_vtype(len,offset,cap,ucap,refcnt,dynamic,l)
   ):<> bool( refcnt > 0)
 
+(* O(1)
+ *)
 fn
   isnot_dynamic
   {len,offset,cap,ucap,refcnt:nat}{dynamic:bool}{l:addr}
   ( i: !Bytestring_vtype(len,offset,cap,ucap,refcnt,dynamic,l)
   ):<> bool( dynamic == false)
 
+(* O(l_len + r_len)
+ *)
 fn
   eq_bytestring_bytestringC
   {l_len, r_len, l_offset, r_offset, l_cap, r_cap, l_ucap, r_ucap, l_refcnt: nat}
@@ -182,6 +209,8 @@ fn
   [r: bool | (l_len == r_len && r ) || (l_len != r_len || r == false)]
   bool(r)
 
+(* O(l_len + r_len)
+ *)
 fn
   eq_bytestring_bytestring
   {l_len, r_len, l_offset, r_offset, l_cap, r_cap, l_ucap, r_ucap, l_refcnt, r_refcnt: nat}
@@ -195,6 +224,8 @@ fn
 
 overload = with eq_bytestring_bytestring
 
+(* O(l_len + r_len)
+ *)
 fn
   neq_bytestring_bytestring
   {l_len, l_offset, l_cap, l_ucap, l_refcnt: nat}{l_dynamic:bool}{l_p:addr}
@@ -206,6 +237,8 @@ fn
 overload <> with neq_bytestring_bytestring
 overload != with neq_bytestring_bytestring
 
+(* O(l_len + r_len)
+ *)
 fn
   neq_bytestring_bytestringC
   {l_len, l_offset, l_cap, l_ucap, l_refcnt: nat}{l_dynamic:bool}{l_p:addr}
@@ -260,24 +293,32 @@ symintr ++
 infixl (+) ++
 overload ++ with growC
 
+(* O(1)
+ *)
 fn
   reference_count
   { len, offset, cap, ucap, refcnt:nat}{dynamic:bool}{l:addr}
   ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
   ):<> size_t( refcnt)
 
+(* O(1)
+ *)
 fn
   capacity
   { len, offset, cap, ucap, refcnt:nat}{dynamic:bool}{l:addr}
   ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
   ):<> size_t( cap)
 
+(* O(1)
+ *)
 fn
   unused_capacity
   { len, offset, cap, ucap, refcnt:nat}{dynamic:bool}{l:addr}
   ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
   ):<> size_t( ucap)
 
+(* O(1)
+ *)
 fn
   length_bs
   { len, offset, cap, ucap, refcnt:nat}{dynamic:bool}{l:addr}
@@ -285,6 +326,8 @@ fn
   ):<> size_t(len)
 overload length with length_bs
 
+(* O(1)
+ *)
 (*
   1. 
   val a = create(100)
@@ -309,6 +352,8 @@ fn
   ):<!wrt>
   Bytestring_vtype( len, offset, cap, ucap, 1, dynamic, l)
 
+(* O(1)
+ *)
 fn
   ref_bs_parent
   { len, offset, cap, ucap, refcnt:nat}{dynamic:bool}{l:addr}
@@ -317,18 +362,24 @@ fn
   Bytestring_vtype( len, offset, cap, 0, 1, dynamic, l)
 
 
+(* O(1)
+ *)
 fn
   is_empty
   { len, offset, cap, ucap, refcnt:nat}{dynamic:bool}{l:addr}
   ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
   ):<> bool( len == 0)
 
+(* O(1)
+ *)
 fn
   isnot_empty
   { len, offset, cap, ucap, refcnt:nat}{dynamic:bool}{l:addr}
   ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
   ):<> bool( len > 0 && l > null)
 
+(* O(1)
+ *)
 (* creates uninitialized bytestring with given capacity *) 
 fn
   create
@@ -338,6 +389,8 @@ fn
   [l:agz]
   Bytestring_vtype(0, 0, cap, cap, 0, true, l)
 
+(* O(1)
+ *)
 fn
   take
   {n:nat}
@@ -347,6 +400,8 @@ fn
   ):<!wrt>
   Bytestring_vtype( n, offset, cap, 0, 1, dynamic, l)
   
+(* O(1)
+ *)
 fn
   takeC
   {n:nat}
@@ -357,6 +412,8 @@ fn
   [newucap: nat | (n == len && newucap == ucap) || (n < len && newucap == 0)]
   Bytestring_vtype( n, offset, cap, newucap, refcnt, dynamic, l)
 
+(* O(1)
+ *)
 fn
   drop
   {n:nat}
@@ -366,6 +423,8 @@ fn
   ):<!wrt>
   Bytestring_vtype( len - n, offset + n, cap, ucap, 1, dynamic, l)
   
+(* O(1)
+ *)
 fn
   dropC
   {n:nat}
@@ -375,16 +434,22 @@ fn
   ):<!wrt>
   Bytestring_vtype( len - n, offset + n, cap, ucap, refcnt, dynamic, l)
 
+(* O(n)
+ *)
 fn
   println
   ( i: !Bytestring1
   ): void
 
+(* O(n)
+ *)
 fn
   printlnC
   ( i: BytestringNSH1
   ): void
 
+(* O(1)
+ *)
 fn
   bs2bytes
   {n,offset,cap,ucap,refcnt: nat | cap > 0}{dynamic:bool}{l:addr}
@@ -396,6 +461,8 @@ fn
   , size_t(n)
   )
 
+(* O(1)
+ *)
 praxi
   bytes_addback
   {n,offset,cap,ucap,refcnt: nat | cap > 0}{dynamic:bool}{l, l1:addr}
@@ -405,6 +472,8 @@ praxi
   void
   
 
+(* O(1)
+ *)
 fn
   take1
   {len,offset,cap,ucap,refcnt,n: nat}{dynamic:bool}{l:addr}
@@ -414,6 +483,8 @@ fn
   [newlen: nat | (n >= len && newlen == len) || (n < len && newlen == n)]
   Bytestring_vtype( newlen, offset, cap, 0, 1, dynamic, l)
 
+(* O(1)
+ *)
 fn
   deref
   {len,offset,cap,ucap,refcnt: nat}{dynamic:bool}{l:addr}
@@ -421,6 +492,8 @@ fn
   ):<!wrt>
   Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
   
+(* O(1)
+ *)
 fn
   decref_bs
   {c_len,c_offset,cap,c_ucap: nat}{dynamic:bool}{l:addr}
@@ -430,14 +503,7 @@ fn
   ):<!wrt>
   void
   
-fn
-  init
-  {len, offset,cap,ucap,refcnt: nat}{dynamic:bool}{l:addr}
-  ( i: &Bytestring_vtype( 0, 0,0,0, 0, false, null) >> Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
-  , v: Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
-  ):<!wrt>
-  void
-
+(* O(1) *)
 fn
   get_byte_at_uint
   {n,len,offset,cap,ucap,refcnt: nat | n < len}{dynamic:bool}{l:addr}
@@ -445,6 +511,8 @@ fn
   , n: size_t n
   ):<>
   uchar
+
+(* O(1) *)
 fn
   get_byte_at_int
   {n,len,offset,cap,ucap,refcnt: nat | n < len}{dynamic:bool}{l:addr}
@@ -452,6 +520,8 @@ fn
   , n: int n
   ):<>
   uchar
+
+(* O(1) *)
 fn
   get_char_at_uint
   {n,len,offset,cap,ucap,refcnt: nat | n < len}{dynamic:bool}{l:addr}
@@ -459,6 +529,8 @@ fn
   , n: size_t n
   ):<>
   char
+
+(* O(1) *)
 fn
   get_char_at_int
   {n,len,offset,cap,ucap,refcnt: nat | n < len}{dynamic:bool}{l:addr}
@@ -470,6 +542,7 @@ fn
 overload [] with get_byte_at_uint
 overload [] with get_byte_at_int
 
+(* O(1) *)
 fn
   split_on
   {len,offset,cap,ucap,refcnt: nat}{dynamic:bool}{l:addr}
@@ -479,6 +552,7 @@ fn
   #[cnt:nat]
   list_vt( [olen, ooffset:nat] Bytestring_vtype( olen, ooffset, cap, 0, 1, dynamic, l), cnt)
 
+(* O(olen) *)
 fn
   {env:viewt0ype}
   take_while
@@ -490,6 +564,7 @@ fn
   [olen, ooffset: nat]
   Bytestring_vtype( olen, ooffset, cap, 0, 1, dynamic, l)
  
+(* O(len) *)
 fn
   copy
   {len,offset,cap,ucap,refcnt: nat}{dynamic:bool}{l:addr}
@@ -498,28 +573,3 @@ fn
   [l1:addr | ( l > null && l1 > null) || l1 == null ]
   [odynamic: bool | ( l > null && odynamic == true) || odynamic == false]
   Bytestring_vtype( len, 0, len, 0, 0, odynamic, l1)
-  
-(* 
-
- 
-
-fn
-  copy
-  {n,cap,refcnt: nat | cap >= n}
-  ( i: !Bytestring(n,cap,refcnt)
-  ):
-  Bytestring( n, cap, 0)
-
-
-fn
-  bs2ptr
-  {n,cap: nat | cap > 0}
-  ( i: !Bytestring(n,cap)
-  ): [l:agz] ptr l
-fn
-  bs2string
-  {n,cap: nat | cap > 0}
-  ( i: !Bytestring(n,cap)
-  ): string(n)
-
-*)

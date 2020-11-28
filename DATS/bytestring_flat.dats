@@ -744,25 +744,6 @@ implement deref( i) = res where {
   val res = bs_build( rpf | impl)
   prval () = deinit( i)
 }
-implement init( i, v) = {
-  extern castfn
-    explode
-    { len, offset, cap, ucap, refcnt:nat}{dynamic:bool}{l:addr}
-    ( i: Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
-    ):<>
-    ( ( size_t(len)
-      , size_t(offset)
-      , size_t(cap)
-      , size_t(ucap)
-      , size_t(refcnt)
-      , bool(dynamic)
-      , ptr(l)
-      )
-    )
-  val (rpf | impl) = bs_explode( v)
-  val _ = explode( i)
-  val () = i := bs_build( rpf | impl)
-}
 
 implement append(l, r) = res where {
   prval () = lemma_bytestring_param( l)
