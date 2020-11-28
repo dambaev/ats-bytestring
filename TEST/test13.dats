@@ -16,8 +16,8 @@ fn
   val (pf, fpf | p) = array_ptr_alloc<char>( i2sz 100)
   val bs = $BS.pack ( pf, fpf | p, i2sz 0, i2sz 100)
   val s = $BS.pack "hello"
-  val bs = $BS.appendC( bs, s)
-  val bs = $BS.appendC( bs, $BS.pack " world")
+  val bs = $BS.growC( bs, s)
+  val bs = $BS.growC( bs, $BS.pack " world")
 }
 
 implement main0() = {

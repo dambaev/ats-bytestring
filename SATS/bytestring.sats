@@ -214,36 +214,51 @@ fn
   , r: Bytestring_vtype( r_len, r_offset, r_cap, r_ucap, 0, r_dynamic, r_p)
   ):<!wrt> bool
 
-(* creates new bytestring with content of r appended to l. does not consumes l and r 
-  in case if 'l' has enough unused capacity to fit 'r', it will copy content of 'r' into this unused space, incrementing reference counter of l and result
+(* O(l_len + r_len) 
+  creates new bytestring with content of r appended to l. does not consumes l and r 
+  this function is always creates new Bytestring
 *)
 fn
   append
-  {l_len, l_offset, l_cap, l_ucap, l_refcnt: nat}{l_dynamic:bool}{l_p:addr}
-  {r_len, r_offset, r_cap, r_ucap, r_refcnt: nat}{r_dynamic:bool}{r_p:addr}
-  ( l: &Bytestring_vtype(l_len, l_offset, l_cap, l_ucap, l_refcnt, l_dynamic, l_p) >> Bytestring_vtype( l_len, l_offset, l_cap, rl_ucap, rl_refcnt, l_dynamic, l_p)
-  , r: &Bytestring_vtype(r_len, r_offset, r_cap, r_ucap, r_refcnt, r_dynamic, r_p) >>Bytestring_vtype( r_len, r_offset, r_cap, rr_ucap, rr_refcnt, r_dynamic, r_p)
+  {l_len, l_offset, l_cap, l_ucap, l_refcnt: nat | l_len > 0}{l_dynamic:bool}{l_p:agz}
+  {r_len, r_offset, r_cap, r_ucap, r_refcnt: nat | r_len > 0}{r_dynamic:bool}{r_p:agz}
+  ( l: !Bytestring_vtype(l_len, l_offset, l_cap, l_ucap, l_refcnt, l_dynamic, l_p)
+  , r: !Bytestring_vtype(r_len, r_offset, r_cap, r_ucap, r_refcnt, r_dynamic, r_p)
   ):<!wrt>
-  #[rr_ucap,rr_refcnt, rl_ucap, rl_refcnt, offset, cap, ucap, refcnt: nat]
-  #[dynamic:bool]
-  #[l:addr | (l_len > 0 || r_len > 0) && l > null]
-  Bytestring_vtype( l_len+r_len, offset, cap, ucap, refcnt, dynamic, l)
+  #[l:addr | l > null]
+  Bytestring_vtype( l_len+r_len, 0, l_len+r_len, 0, 0, true, l)
 
 (* the same as append, but consumes arguments in order to make caller's code clear from bunch of val's and free()
  *)
 fn
   appendC
-  {l_len, l_offset, l_cap, l_ucap: nat}{l_dynamic:bool}{l_p:addr}
-  {r_len, r_offset, r_cap, r_ucap: nat}{r_dynamic:bool}{r_p:addr}
+  {l_len, l_offset, l_cap, l_ucap: nat | l_len > 0}{l_dynamic:bool}{l_p:agz}
+  {r_len, r_offset, r_cap, r_ucap: nat | r_len > 0}{r_dynamic:bool}{r_p:agz}
   ( l: Bytestring_vtype(l_len, l_offset, l_cap, l_ucap, 0, l_dynamic, l_p)
   , r: Bytestring_vtype(r_len, r_offset, r_cap, r_ucap, 0, r_dynamic, r_p)
   ):<!wrt>
-  [offset, cap, ucap: nat | (l_len > 0 || r_len > 0) && (cap > 0)]
-  [dynamic:bool]
-  [l:addr | (l_len > 0 || r_len > 0) && l > null]
-  Bytestring_vtype( l_len+r_len, offset, cap, ucap, 0, dynamic, l)
+  [l:addr | l > null]
+  Bytestring_vtype( l_len+r_len, 0, l_len+r_len, 0, 0, true, l)
 
 overload + with appendC
+
+(* O(r_len)
+ this function appends 'r' at the end of 'l''s unused buffer.
+ See test17 for example of usage.\
+ this usage does not perform allocation, but does consumes 'r', so it will call 'free' in case if 'r' had been dynamically allocated.
+ *)
+fn
+  growC 
+  {r_len, r_offset, r_cap, r_ucap, l_refcnt: nat | r_len > 0}{r_dynamic:bool}{r_p:agz}
+  {l_len, l_offset, l_cap, l_ucap: nat | l_ucap >= r_len }{l_dynamic:bool}{l_p:agz}
+  ( l: Bytestring_vtype(l_len, l_offset, l_cap, l_ucap, l_refcnt, l_dynamic, l_p)
+  , r: Bytestring_vtype(r_len, r_offset, r_cap, r_ucap, 0, r_dynamic, r_p)
+  ):<!wrt>
+  Bytestring_vtype( l_len+r_len, l_offset, l_cap, l_ucap - r_len, l_refcnt, l_dynamic, l_p)
+
+symintr ++
+infixl (+) ++
+overload ++ with growC
 
 fn
   reference_count
@@ -312,7 +327,7 @@ fn
   isnot_empty
   { len, offset, cap, ucap, refcnt:nat}{dynamic:bool}{l:addr}
   ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
-  ):<> bool( len > 0)
+  ):<> bool( len > 0 && l > null)
 
 (* creates uninitialized bytestring with given capacity *) 
 fn

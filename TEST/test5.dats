@@ -1,6 +1,9 @@
 #include "share/atspre_staload.hats"
 
 #define ATS_DYNLOADFLAG 0
+
+symintr ++
+infixl (+) ++
   
 staload BS="SATS/bytestring.sats"
 staload "SATS/bytestring.sats"
@@ -20,7 +23,7 @@ implement main0() = {
   val () = $BS.free( view@arr | s1)
   val s5 = $BS.pack "h"
   val tmp = $BS.create( i2sz 1024)
-  val () = $BS.printlnC( tmp + $BS.takeC( i2sz(4), $BS.pack( view@arr | addr@arr, i2sz(5), i2sz 5)) + $BS.pack " world" + $BS.pack " and others" )
+  val () = $BS.printlnC( tmp ++ $BS.takeC( i2sz(4), $BS.pack( view@arr | addr@arr, i2sz(5), i2sz 5)) ++ $BS.pack " world" ++ $BS.pack " and others" )
   val () = $BS.free(s2)
   val () = $BS.free(s5)
 }

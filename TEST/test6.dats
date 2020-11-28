@@ -2,6 +2,9 @@
 
 #define ATS_DYNLOADFLAG 0
   
+symintr ++
+infixl (+) ++
+
 staload BS="SATS/bytestring.sats"
 staload "SATS/bytestring.sats"
 
@@ -10,7 +13,8 @@ implement main0() = {
   val ( bytes_pf | bs0, bs_sz) = $BS.bs2bytes( s1)
   val () = assertloc( bs_sz = i2sz 0)
   val s1 = minus_addback( bytes_pf| s1)
-  val s2 = s1 + $BS.pack "hello"
+  val s2 = s1 ++ $BS.pack "hello"
+  prval () = $BS.lemma_bytestring_param( s2)
   val ( bytes_pf | bs1, bs_sz) = $BS.bs2bytes( s2)
   val () = assertloc( bs_sz = i2sz 5)
   val () = assertloc( bs0 = bs1)

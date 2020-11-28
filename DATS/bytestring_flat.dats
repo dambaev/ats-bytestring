@@ -63,38 +63,25 @@ extern praxi
 
 extern fn
   append_impl
-  {l_len, l_offset, l_cap, l_ucap, l_refcnt: nat}{l_dynamic:bool}{l_p:addr}
-  {r_len, r_offset, r_cap, r_ucap, r_refcnt: nat}{r_dynamic:bool}{r_p:addr}
-  ( l: &Bytestring_vtype(l_len, l_offset, l_cap, l_ucap, l_refcnt, l_dynamic, l_p) >> Bytestring_vtype( l_len, l_offset, l_cap, rl_ucap, rl_refcnt, l_dynamic, l_p)
-  , r: &Bytestring_vtype(r_len, r_offset, r_cap, r_ucap, r_refcnt, r_dynamic, r_p) >>Bytestring_vtype( r_len, r_offset, r_cap, rr_ucap, rr_refcnt, r_dynamic, r_p)
+  {l_len, l_offset, l_cap, l_ucap, l_refcnt: nat | l_len > 0}{l_dynamic:bool}{l_p:agz}
+  {r_len, r_offset, r_cap, r_ucap, r_refcnt: nat | r_len > 0}{r_dynamic:bool}{r_p:agz}
+  ( l: !Bytestring_vtype(l_len, l_offset, l_cap, l_ucap, l_refcnt, l_dynamic, l_p)
+  , r: !Bytestring_vtype(r_len, r_offset, r_cap, r_ucap, r_refcnt, r_dynamic, r_p)
   ):<!wrt>
-  #[rr_ucap: nat | (l_len == 0 && l_ucap < r_len && rr_ucap == 0) || ((l_len > 0 || l_ucap >= r_len) && rr_ucap == r_ucap)]
-  #[rr_refcnt:nat | (l_len == 0 && l_ucap < r_len && rr_refcnt == r_refcnt + 1) || ((l_len > 0 || l_ucap >= r_len) && rr_refcnt == r_refcnt )]
-  #[rl_ucap: nat | (l_ucap >= r_len && rl_ucap == 0) || (l_ucap < r_len && rl_ucap == l_ucap)]
-  #[rl_refcnt:nat | (l_ucap >= r_len && rl_refcnt == l_refcnt + 1) || (l_ucap < r_len && rl_refcnt == l_refcnt )]
-  #[offset:nat | (l_ucap >= r_len && offset == l_offset) || (l_len == 0 && l_ucap < r_len && offset == r_offset) || (l_ucap < r_len && offset == 0)]
-  #[cap:nat | ( l_ucap >= r_len && cap == l_cap) || (l_len == 0 && l_ucap < r_len && cap == r_cap) || (l_ucap < r_len && cap == l_len + r_len)]
-  #[ucap:nat | (l_ucap >= r_len && ucap == l_ucap - r_len) || (l_len == 0 && l_ucap < r_len && ucap == r_ucap) || (l_len > 0 && l_ucap < r_len && ucap == 0)]
-  #[refcnt:nat | (l_ucap >= r_len && refcnt == 1) || (l_len == 0 && l_ucap < r_len && refcnt == 1) || (l_len > 0 && l_ucap < r_len && refcnt == 0)]
-  #[dynamic:bool | (l_ucap >= r_len && dynamic == l_dynamic) || (l_len == 0 && l_ucap < r_len && dynamic == r_dynamic) || (l_len > 0 && l_ucap < r_len && dynamic == true) ]
-  #[l:addr | (l_ucap >= r_len && l == l_p) || (l_len == 0 && l_ucap < r_len && l == r_p) || (l_len > 0 && l_ucap < r_len && l > null) ]
-  Bytestring_vtype( l_len+r_len, offset, cap, ucap, refcnt, dynamic, l)
+  [l:addr | l > null ]
+  Bytestring_vtype( l_len+r_len, 0, l_len+r_len, 0, 0, true, l)
 
 (* the same as append, but consumes arguments in order to make caller's code clear from bunch of val's and free()
  *)
 extern fn
   appendC_impl
-  {l_len, l_offset, l_cap, l_ucap: nat}{l_dynamic:bool}{l_p:addr}
-  {r_len, r_offset, r_cap, r_ucap: nat}{r_dynamic:bool}{r_p:addr}
+  {l_len, l_offset, l_cap, l_ucap: nat | l_len > 0}{l_dynamic:bool}{l_p:agz}
+  {r_len, r_offset, r_cap, r_ucap: nat | r_len > 0}{r_dynamic:bool}{r_p:agz}
   ( l: Bytestring_vtype(l_len, l_offset, l_cap, l_ucap, 0, l_dynamic, l_p)
   , r: Bytestring_vtype(r_len, r_offset, r_cap, r_ucap, 0, r_dynamic, r_p)
   ):<!wrt>
-  [offset:nat | (l_ucap >= r_len && offset == l_offset) || (l_len == 0 && l_ucap < r_len && offset == r_offset) || (l_ucap < r_len && offset == 0)]
-  [cap:nat | (l_ucap >= r_len && cap == l_cap) || (l_len == 0 && l_ucap < r_len && cap == r_cap) || (l_ucap < r_len && cap == l_len + r_len)]
-  [ucap:nat | (l_ucap >= r_len && ucap == l_ucap - r_len) || (l_len == 0 && l_ucap < r_len && ucap == r_ucap) || (l_ucap < r_len && ucap == 0)]
-  [dynamic:bool | (l_ucap >= r_len && dynamic == l_dynamic) || (l_len == 0 && l_ucap < r_len && dynamic == r_dynamic) || (l_ucap < r_len && dynamic == true) ]
-  [l:addr | (l_ucap >= r_len && l == l_p) || (l_len == 0 && l_ucap < r_len && l == r_p) || (l_len > 0 && l_ucap < r_len && l > null) ]
-  Bytestring_vtype( l_len+r_len, offset, cap, ucap, 0, dynamic, l)
+  [l:addr | l > null ]
+  Bytestring_vtype( l_len+r_len, 0, l_len+r_len, 0, 0, true, l)
 
 implement empty() = believeme( () | ( i2sz(0), i2sz(0), i2sz(0), i2sz(0), i2sz(0), false, the_null_ptr)) where {
   extern castfn
@@ -340,33 +327,12 @@ implement
   appendC_impl
   {l_len, l_offset, l_cap, l_ucap}{l_dynamic}{l_p}
   {r_len, r_offset, r_cap, r_ucap}{r_dynamic}{r_p}
-  ( vl, vr) =
-let
-  var l: Bytestring0?
-  var r: Bytestring0?
-  val () = l := vl
-  val () = r := vr
-  val l_ucap = unused_capacity l
-  val l_len = length l
-  val r_len = length r
+  ( l, r) = res where {
   var res: Bytestring0?
   val () = res := append_impl( l, r)
-in
-  ifcase
-  | (l_len = 0) * (l_ucap < r_len) => res where {
-    val () = free( r, res)
-    val () = free l
-  }
-  | (l_ucap < r_len) => res where {
-    prval _ = prop_verify {l_ucap < r_len}()
-    val () = free r
-    val () = free l
-  }
-  | _ => res where {
-    val () = free r
-    val () = free( l, res) 
-  }
-end
+  val () = free r
+  val () = free l
+}
 
 implement reference_count(i) = refcnt where {
   prval () = lemma_bytestring_param( i)
@@ -454,15 +420,8 @@ let
       )
     ):<> Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
 in
-  ifcase
-  | is_empty l * (unused_capacity l < r_len) => res where {
-    val res = ref_bs_child r
-  }
-  | is_empty r => res where {
-    val res = ref_bs_child l
-  }
   (* create new buffer *)
-  | unused_capacity l < r_len => res where {
+  res where {
     val res = create( l_len + r_len)
     val (res_rpf | impl) = bs_takeout_struct( res )
     val (res_len, res_offset, res_cap, res_ucap, res_refcnt, res_dynamic, res_p) = impl
@@ -511,7 +470,7 @@ in
     val res = build( () | ( l_len + r_len, res_offset, res_cap, res_ucap - l_len - r_len, res_refcnt, res_dynamic, res_l))
   }
   (* reuse l's unused capacity *)
-  | _ => res where {
+(*  | _ => res where {
     prval () = prop_verify {l_ucap >= r_len}()
     val res = ref_bs_child l
     val ( rpf | impl) = bs_takeout_struct( res)
@@ -546,6 +505,7 @@ in
     val (res_len, res_offset, res_cap, res_ucap, res_refcnt, res_dynamic, res_p) = explode( res)
     val res = build( () | (res_len + r_len, res_offset, res_cap, res_ucap - r_len, res_refcnt, res_dynamic, res_p))
   }
+*)
 end
 
 implement ref_bs_child( i) = res where {
@@ -645,7 +605,12 @@ in
   else false
 end
 
-implement isnot_empty(v) = not( is_empty(v))
+implement isnot_empty(v) = ((n > 0) * ptr_isnot_null(l)) where {
+  prval () = lemma_bytestring_param( v)
+  val (rpf | impl) = bs_takeout_struct(v)
+  val (n, _, _, _, _, _, l) = impl
+  prval () = bs_takeback_struct( rpf | v)
+}
 
 implement neq_bytestring_bytestring(l, r) = not( l = r)
 implement eq_bytestring_bytestringC(l, r) = res where {
@@ -809,6 +774,42 @@ implement appendC(l, r) = res where {
   prval () = lemma_bytestring_param( l)
   prval () = lemma_bytestring_param( r)
   val res = appendC_impl( l, r)
+}
+
+implement growC(l, r) = res where {
+  prval () = lemma_bytestring_param( l)
+  prval () = lemma_bytestring_param( r)
+  val ( lpf | l_impl) = bs_explode( l)
+  val ( rpf | r_impl) = bs_takeout_struct( r)
+  val (l_len, l_offset, l_cap, l_ucap, l_refcnt, l_dynamic, l_p) = l_impl
+  val (r_len, r_offset, r_cap, r_ucap, r_refcnt, r_dynamic, r_p) = r_impl
+  (* now actually copy the data to the end of l's buffer *)
+  prval succ_vb( l_rpf) = lpf
+  prval (l_pf, l_fpf) = l_rpf
+  prval (l_pf1, l_pf2) = array_v_split_at( l_pf | l_offset + l_len)
+  prval (l_pf21, l_pf22) = array_v_split_at( l_pf2 | r_len) (* l_pf21 is the start of destination buffer *)
+  
+  prval succ_vb( r_rpf ) = rpf
+  prval (r_pf, r_fpf) = r_rpf
+  prval (r_pf1, r_pf2)= array_v_split_at( r_pf | r_offset)
+  prval (r_pf21, r_pf22) = array_v_split_at( r_pf2 | r_len) (* r_pf21 contains the data *)
+  
+  val l_ptr = ptr1_add_sz<uchar>(l_p, l_offset + l_len) (* the end of data contains unused memory *)
+  val r_ptr = ptr1_add_sz<uchar>(r_p, r_offset) (* the start of the right buffer *)
+  val () = memcpy( l_pf21, r_pf21 | l_ptr, r_ptr, r_len) (* now actually copy memory *)
+  (* and bring back the proofs *)
+  prval () = r_pf2 := array_v_unsplit( r_pf21, r_pf22)
+  prval () = r_pf := array_v_unsplit( r_pf1, r_pf2)
+  prval () = rpf := succ_vb( (r_pf, r_fpf))
+  
+  prval () = l_pf2 := array_v_unsplit( l_pf21, l_pf22)
+  prval () = l_pf := array_v_unsplit( l_pf1, l_pf2)
+  prval () = lpf := succ_vb( (l_pf, l_fpf))
+
+  val res = bs_build( lpf | (l_len+r_len, l_offset, l_cap, l_ucap - r_len, l_refcnt, l_dynamic, l_p))
+  (* cleanup *)
+  prval () = bs_takeback_struct( rpf | r)
+  val () = free r
 }
 
 implement get_char_at_uint( i, n) = uc2c res where {
