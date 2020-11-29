@@ -3,4 +3,4 @@
 infixl (+) ++
 
 (* staload the SATS file *)
-staload "SATS/bytestring.sats"
+staload "./../SATS/bytestring.sats"
