@@ -289,7 +289,6 @@ fn
   ):<!wrt>
   Bytestring_vtype( l_len+r_len, l_offset, l_cap, l_ucap - r_len, l_refcnt, l_dynamic, l_p)
 
-symintr ++
 infixl (+) ++
 overload ++ with growC
 

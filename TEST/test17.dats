@@ -2,11 +2,8 @@
 
 #define ATS_DYNLOADFLAG 0
   
-symintr ++
-infixl (+) ++
-
+#include "HATS/bytestring.hats"
 staload BS="SATS/bytestring.sats"
-staload "SATS/bytestring.sats"
 
 fn test0():void = {
   var s: $BS.Bytestring0?

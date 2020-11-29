@@ -1,15 +1,10 @@
 #include "share/atspre_staload.hats"
 
-#define ATS_DYNLOADFLAG 0
-
-symintr +++
-  
-staload "SATS/bytestring.sats"
+#include "HATS/bytestring.hats"
 staload BS="SATS/bytestring.sats"
 
-symintr ++
-infixl (+) ++
-overload ++ with $BS.growC
+#define ATS_DYNLOADFLAG 0
+
 
 implement main0() = {
   val s1 = $BS.create( i2sz(100)) ++ $BS.pack "test1"

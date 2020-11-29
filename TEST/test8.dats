@@ -2,6 +2,7 @@
 
 #define ATS_DYNLOADFLAG 0
   
+#include "HATS/bytestring.hats"
 staload BS="SATS/bytestring.sats"
 
 fn test(): $BS.Bytestring0 = bs where {

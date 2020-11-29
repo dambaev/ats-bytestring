@@ -2,11 +2,8 @@
 
 #define ATS_DYNLOADFLAG 0
   
-symintr ++
-infixl (+) ++
-
+#include "HATS/bytestring.hats"
 staload BS="SATS/bytestring.sats"
-staload "SATS/bytestring.sats"
 
 implement main0() = {
   val s1 = $BS.create( i2sz 20)

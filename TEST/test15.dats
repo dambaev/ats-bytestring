@@ -2,8 +2,8 @@
 
 #define ATS_DYNLOADFLAG 0
   
+#include "HATS/bytestring.hats"
 staload BS="SATS/bytestring.sats"
-staload "SATS/bytestring.sats"
 
 extern castfn
   c2b
