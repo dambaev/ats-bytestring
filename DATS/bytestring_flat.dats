@@ -4,6 +4,7 @@
 #define ATS_PACKNAME "bytestring"
 #define ATS_EXTERN_PREFIX "bytestring_"
 
+#include "./../HATS/bytestring.hats"
 staload "./../SATS/bytestring.sats"
 staload UN = "prelude/SATS/unsafe.sats"
 //staload "prelude/SATS/array.sats"

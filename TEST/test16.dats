@@ -18,23 +18,23 @@ fn test0():void = {
   val () = elements := $BS.split_on( c2uc 'a', s)
   val () = assertloc( list_vt_length( elements) = 5)
   val v = list_vt_takeout_at( elements, 0)
-  val () = assertloc( eq_bytestring_bytestringC( v, $BS.empty()))
+  val () = assertloc( $BS.eq_bytestring_bytestringC( v, $BS.empty()))
   val () = $BS.free( v, s)
 
   val v = list_vt_takeout_at( elements, 0)
-  val () = assertloc( eq_bytestring_bytestringC( v, $BS.pack "b"))
+  val () = assertloc( $BS.eq_bytestring_bytestringC( v, $BS.pack "b"))
   val () = $BS.free( v, s)
 
   val v = list_vt_takeout_at( elements, 0)
-  val () = assertloc( eq_bytestring_bytestringC( v, $BS.pack "c"))
+  val () = assertloc( $BS.eq_bytestring_bytestringC( v, $BS.pack "c"))
   val () = $BS.free( v, s)
 
   val v = list_vt_takeout_at( elements, 0)
-  val () = assertloc( eq_bytestring_bytestringC( v, $BS.pack "d"))
+  val () = assertloc( $BS.eq_bytestring_bytestringC( v, $BS.pack "d"))
   val () = $BS.free( v, s)
 
   val v = list_vt_takeout_at( elements, 0)
-  val () = assertloc( eq_bytestring_bytestringC( v, $BS.empty()))
+  val () = assertloc( $BS.eq_bytestring_bytestringC( v, $BS.empty()))
   val () = $BS.free( v, s)
 
   val ~list_vt_nil() = elements
@@ -49,7 +49,7 @@ fn test1(): void = {
   val () = assertloc( list_vt_length( elements) = 1)
 
   val v = list_vt_takeout_at( elements, 0)
-  val () = assertloc( eq_bytestring_bytestringC( v, $BS.pack "bbb"))
+  val () = assertloc( $BS.eq_bytestring_bytestringC( v, $BS.pack "bbb"))
   val () = $BS.free( v, s)
 
   val ~list_vt_nil() = elements

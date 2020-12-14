@@ -222,8 +222,6 @@ fn
   [r: bool | (l_len == r_len && r ) || (l_len != r_len || r == false)]
   bool(r)
 
-overload = with eq_bytestring_bytestring
-
 (* O(l_len + r_len)
  *)
 fn
@@ -233,9 +231,6 @@ fn
   ( l: !Bytestring_vtype( l_len, l_offset, l_cap, l_ucap, l_refcnt, l_dynamic, l_p)
   , r: !Bytestring_vtype( r_len, r_offset, r_cap, r_ucap, r_refcnt, r_dynamic, r_p)
   ):<> bool
-
-overload <> with neq_bytestring_bytestring
-overload != with neq_bytestring_bytestring
 
 (* O(l_len + r_len)
  *)
@@ -273,8 +268,6 @@ fn
   [l:addr | l > null]
   Bytestring_vtype( l_len+r_len, 0, l_len+r_len, 0, 0, true, l)
 
-overload + with appendC
-
 (* O(r_len)
  this function appends 'r' at the end of 'l''s unused buffer.
  See test17 for example of usage.\
@@ -288,9 +281,6 @@ fn
   , r: Bytestring_vtype(r_len, r_offset, r_cap, r_ucap, 0, r_dynamic, r_p)
   ):<!wrt>
   Bytestring_vtype( l_len+r_len, l_offset, l_cap, l_ucap - r_len, l_refcnt, l_dynamic, l_p)
-
-infixl (+) ++
-overload ++ with growC
 
 (* O(1)
  *)
@@ -323,7 +313,6 @@ fn
   { len, offset, cap, ucap, refcnt:nat}{dynamic:bool}{l:addr}
   ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
   ):<> size_t(len)
-overload length with length_bs
 
 (* O(1)
  *)
@@ -550,9 +539,6 @@ fn
   , n: int n
   ):<>
   char
-
-overload [] with get_byte_at_uint
-overload [] with get_byte_at_int
 
 (* O(1) *)
 fn

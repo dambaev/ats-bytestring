@@ -7,5 +7,5 @@ staload BS="SATS/bytestring.sats"
 
 implement main0() = {
   val s = $BS.empty()
-  val () = $BS.free(s)
+  val () = free(s)
 }
