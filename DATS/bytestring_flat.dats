@@ -175,8 +175,8 @@ fn
   ( i: ptr l
   , n: size_t n
   ):<>
-  [newl: agz | newl == l+n*sizeof(a)]
-  ptr newl =
+  [l+n*sizeof(a) > null]
+  ptr (l+n*sizeof(a)) =
 let
   val ret = ptr_add<a>(i, n)
   extern castfn
@@ -303,12 +303,12 @@ in
 end
   
 implement 
-  appendC
+  appendC_bs_bs
   {l_len, l_offset, l_cap, l_ucap}{l_dynamic}{l_p}
   {r_len, r_offset, r_cap, r_ucap}{r_dynamic}{r_p}
   ( l, r) = res where {
   var res: Bytestring0?
-  val () = res := append( l, r)
+  val () = res := append_bs_bs( l, r)
   val () = free r
   val () = free l
 }
@@ -363,7 +363,7 @@ extern fn
   , sz: size_t n1
   ):<!wrt> void = "mac#memcpy"
 
-implement append
+implement append_bs_bs
   {l_len, l_offset, l_cap, l_ucap, l_refcnt}{l_dynamic}{l_p}
   {r_len, r_offset, r_cap, r_ucap, r_refcnt}{r_dynamic}{r_p}
   (l, r) =
@@ -613,49 +613,49 @@ implement printlnC(i) = {
   val () = free( i)
 }
 
-implement bs2bytes{n,offset,cap,ucap,refcnt}{dynamic}{l}(i) = ret where {
+implement bs2bytes{a}{n,offset,cap,ucap,refcnt}{dynamic}{l}(i) = ret where {
   prval () = lemma_bytestring_param(i)
   val (rpf | impl) = bs_takeout_struct(i)
   val (len, offset, cap, ucap, refcnt, dynamic, p) = impl
   prval succ_vb( pf0) = rpf
   prval (pf, fpf) = pf0
-  val ptr = ptr1_add_sz<char>( p, offset)
+  val ptr = ptr1_add_sz<a>( p, offset)
   prval () = rpf := succ_vb( (pf, fpf))
 
   prval () = bs_takeback_struct( rpf | i)
   extern prfun
     believeme
     {l1:agz}
-    ( i: !Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l) >> minus_vt( Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l), bytes(n) @ l1)
+    ( i: !Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l) >> minus_vt( Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l), array_v(a, l1, n))
     , ptr l1
-    ): ( bytes(n) @ l1)
+    ): ( array_v(a, l1, n))
   val ret = ( believeme(i, ptr) | ptr, len)
 }
 
-implement bs2unused_bytes{n,offset,cap,ucap,refcnt}{dynamic}{l}(i) = ret where {
+implement bs2unused_bytes{a}{n,offset,cap,ucap,refcnt}{dynamic}{l}(i) = ret where {
   prval () = lemma_bytestring_param(i)
   val (rpf | impl) = bs_takeout_struct(i)
   val (len, offset, cap, ucap, refcnt, dynamic, p) = impl
   prval succ_vb( pf0) = rpf
   prval (pf, fpf) = pf0
-  val ptr = ptr1_add_sz<char>( p, offset + len)
+  val ptr = ptr1_add_sz<a>( p, offset + len)
   prval () = rpf := succ_vb( (pf, fpf))
 
   prval () = bs_takeback_struct( rpf | i)
   extern prfun
     believeme
     {l1:agz}
-    ( i: !Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l) >> minus_vt( Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l), bytes(ucap) @ l1)
+    ( i: !Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l) >> minus_vt( Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l), array_v(a,l1,ucap))
     , ptr l1
-    ): ( bytes(ucap) @ l1)
+    ): ( array_v(a,l1,ucap))
   val ret = ( believeme(i, ptr) | ptr, ucap)
 }
 
-implement unused_bytes_addback{n,offset,cap,ucap,refcnt,used_bytes}{dynamic}{l,l1}( pf | i, used_bytes) = {
+implement unused_bytes_addback{a}{n,offset,cap,ucap,refcnt,used_bytes}{dynamic}{l,l1}( pf | i, used_bytes) = {
   extern prfun
     believeme
-    ( pf: bytes(ucap) @ l1
-    | i: !minus_vt( Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l), bytes(ucap) @ l1) >> Bytestring_vtype( n, offset, cap, ucap, refcnt, dynamic, l)
+    ( pf: array_v(a,l1,ucap)
+    | i: !minus_vt( Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l), array_v(a,l1,ucap)) >> Bytestring_vtype( n, offset, cap, ucap, refcnt, dynamic, l)
     ):<> void
   prval () = believeme( pf | i)
   val (pf | impl) = bs_explode( i)
@@ -884,3 +884,65 @@ in
   }
 end
 
+implement append_char_bs(a, l) =
+let
+  prval () = lemma_bytestring_param( l)
+  val sz = length l
+in
+  if sz = i2sz 0
+  then pack a
+  else result where {
+    var result: Bytestring0?
+    val a1 = $UN.cast{byte} a
+    val () = result := create (sz + 1)
+    val ( r_pf | r_ptr, r_sz) = bs2unused_bytes{byte}( result)
+    val ( l_pf | l_ptr, l_sz) = bs2bytes{byte}( l)
+    val () = array_set_at_guint<byte>( !r_ptr, i2sz 0, a1)
+    prval (pf1, pf2) = array_v_split_at( r_pf | i2sz 1)
+    val r_ptr1 = ptr1_add_sz<byte>( r_ptr, i2sz 1)
+    val () = memcpy{byte}{byte}( pf2, l_pf | r_ptr1, l_ptr, l_sz) (* copy l into result *)
+    prval () = r_pf := array_v_unsplit( pf1, pf2)
+    val () = unused_bytes_addback( r_pf | result, sz + 1)
+    prval () = bytes_addback( l_pf | l)
+  }
+end
+implement append_bs_char(l, a) =
+let
+  prval () = lemma_bytestring_param( l)
+  val sz = length l
+in
+  if sz = i2sz 0
+  then pack a
+  else result where {
+    var result: Bytestring0?
+    val a1 = $UN.cast{byte} a
+    val () = result := create (sz + 1)
+    val ( r_pf | r_ptr, r_sz) = bs2unused_bytes{byte}( result)
+    val ( l_pf | l_ptr, l_sz) = bs2bytes{byte}( l)
+    val () = memcpy{byte}{byte}( r_pf, l_pf | r_ptr, l_ptr, l_sz) (* copy l into result *)
+    (* now result[l_sz] should have value of a *)
+    val () = array_set_at_guint( !r_ptr, sz, a1)
+    val () = unused_bytes_addback( r_pf | result, sz + 1)
+    prval () = bytes_addback( l_pf | l)
+  }
+end
+
+implement appendC_bs_char(l, a) = result where {
+  val result = append_bs_char( l, a)
+  val () = free l
+}
+
+implement appendC_char_bs(a, l) = result where {
+  val result = append_char_bs( a, l)
+  val () = free l
+}
+
+implement pack_char(a) = result where {
+  var result: Bytestring0?
+  val a1 = $UN.cast{byte} a
+  val () = result := create (i2sz 1)
+  val ( r_pf | r_ptr, r_sz) = bs2unused_bytes{byte}( result)
+  (* now result[l_sz] should have value of a *)
+  val () = array_set_at_guint( !r_ptr, i2sz 0, a1)
+  val () = unused_bytes_addback( r_pf | result, i2sz 1)
+}

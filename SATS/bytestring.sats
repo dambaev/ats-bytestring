@@ -119,6 +119,15 @@ fn
 
 overload pack with pack_chars_dynamic
 
+(* O(1) *)
+fn
+  pack_char
+  {a:t0ype | sizeof(a) == sizeof(char) || sizeof(a) == sizeof(byte) || sizeof(a) == sizeof(uchar)}
+  ( a: a
+  ):<!wrt>
+  [l:addr | l > null]
+  Bytestring_vtype( 1, 0, 1, 0, 0, true, l)
+
 (* O(1)
  *)
 fn
@@ -247,7 +256,7 @@ fn
   this function is always creates new Bytestring
 *)
 fn
-  append
+  append_bs_bs
   {l_len, l_offset, l_cap, l_ucap, l_refcnt: nat | l_len > 0}{l_dynamic:bool}{l_p:agz}
   {r_len, r_offset, r_cap, r_ucap, r_refcnt: nat | r_len > 0}{r_dynamic:bool}{r_p:agz}
   ( l: !Bytestring_vtype(l_len, l_offset, l_cap, l_ucap, l_refcnt, l_dynamic, l_p)
@@ -255,11 +264,38 @@ fn
   ):<!wrt>
   #[l:addr | l > null]
   Bytestring_vtype( l_len+r_len, 0, l_len+r_len, 0, 0, true, l)
+overload append with append_bs_bs
+
+(* O(n + 1)
+   creates new Bytestring with appending given character into the end of it
+*)
+fn
+  append_bs_char
+  {len, offset, cap, ucap, refcnt: nat}{dynamic:bool}{p:addr}
+  ( l: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, p)
+  , a: char
+  ):<!wrt>
+  [r_p:addr | r_p > null]
+  Bytestring_vtype(len + 1, 0, len + 1, 0, 0, true, r_p)
+overload append with append_bs_char
+
+(* O(n + 1)
+   creates new Bytestring with appending given character into the end of it
+*)
+fn
+  append_char_bs
+  {len, offset, cap, ucap, refcnt: nat}{dynamic:bool}{p:addr}
+  ( a: char
+  , l: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, p)
+  ):<!wrt>
+  [r_p:addr | r_p > null]
+  Bytestring_vtype(len + 1, 0, len + 1, 0, 0, true, r_p)
+overload append with append_char_bs
 
 (* the same as append, but consumes arguments in order to make caller's code clear from bunch of val's and free()
  *)
 fn
-  appendC
+  appendC_bs_bs
   {l_len, l_offset, l_cap, l_ucap: nat | l_len > 0}{l_dynamic:bool}{l_p:agz}
   {r_len, r_offset, r_cap, r_ucap: nat | r_len > 0}{r_dynamic:bool}{r_p:agz}
   ( l: Bytestring_vtype(l_len, l_offset, l_cap, l_ucap, 0, l_dynamic, l_p)
@@ -267,6 +303,33 @@ fn
   ):<!wrt>
   [l:addr | l > null]
   Bytestring_vtype( l_len+r_len, 0, l_len+r_len, 0, 0, true, l)
+overload appendC with appendC_bs_bs
+
+(* O(n + 1)
+   creates new Bytestring with appending given character into the end of it
+*)
+fn
+  appendC_bs_char
+  {len, offset, cap, ucap: nat}{dynamic:bool}{p:addr}
+  ( l: Bytestring_vtype( len, offset, cap, ucap, 0, dynamic, p)
+  , a: char
+  ):<!wrt>
+  [r_p:addr | r_p > null]
+  Bytestring_vtype(len + 1, 0, len + 1, 0, 0, true, r_p)
+overload appendC with appendC_bs_char
+
+(* O(n + 1)
+   creates new Bytestring with appending given character into the end of it
+*)
+fn
+  appendC_char_bs
+  {len, offset, cap, ucap: nat}{dynamic:bool}{p:addr}
+  ( a: char
+  , l: Bytestring_vtype( len, offset, cap, ucap, 0, dynamic, p)
+  ):<!wrt>
+  [r_p:addr | r_p > null]
+  Bytestring_vtype(len + 1, 0, len + 1, 0, 0, true, r_p)
+overload appendC with appendC_char_bs
 
 (* O(r_len)
  this function appends 'r' at the end of 'l''s unused buffer.
@@ -440,11 +503,12 @@ fn
  *)
 fn
   bs2bytes
+  {a:t0ype | sizeof(a) == sizeof(char) || sizeof(a) == sizeof(byte) || sizeof(a) == sizeof(uchar)}
   {n,offset,cap,ucap,refcnt: nat | cap > 0}{dynamic:bool}{l:addr}
-  ( i: !Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l) >> minus_vt( Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l), bytes(n) @ l1)
+  ( i: !Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l) >> minus_vt( Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l), array_v(a, l1, n))
   ):<>
   #[l1:agz]
-  ( bytes(n) @ l1
+  ( array_v(a, l1, n)
   | ptr l1
   , size_t(n)
   )
@@ -453,20 +517,22 @@ fn
  *)
 praxi
   bytes_addback
+  {a:t0ype | sizeof(a) == sizeof(char) || sizeof(a) == sizeof(byte) || sizeof(a) == sizeof(uchar)}
   {n,offset,cap,ucap,refcnt: nat | cap > 0}{dynamic:bool}{l, l1:addr}
-  ( bytes(n) @ l1
-  | i: !minus_vt( Bytestring_vtype( n, offset, cap, ucap, refcnt, dynamic, l), bytes(n) @ l1) >> Bytestring_vtype( n, offset, cap, ucap, refcnt, dynamic, l)
+  ( array_v(a, l1, n)
+  | i: !minus_vt( Bytestring_vtype( n, offset, cap, ucap, refcnt, dynamic, l), array_v(a, l1, n)) >> Bytestring_vtype( n, offset, cap, ucap, refcnt, dynamic, l)
   ):<>
   void
 
 (* O(1) *)
 fn
   bs2unused_bytes
+  {a:t0ype | sizeof(a) == sizeof(char) || sizeof(a) == sizeof(byte) || sizeof(a) == sizeof(uchar)}
   {n,offset,cap,ucap,refcnt: nat | ucap > 0}{dynamic:bool}{l:agz}
-  ( i: !Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l) >> minus_vt( Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l), bytes(ucap) @ l1)
+  ( i: !Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l) >> minus_vt( Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l), array_v(a, l1, ucap))
   ):<>
   #[l1:agz]
-  ( bytes(ucap) @ l1
+  ( array_v(a, l1, ucap)
   | ptr l1
   , size_t(ucap)
   )
@@ -474,9 +540,10 @@ fn
 (* O(1) *)
 fn
   unused_bytes_addback
+  {a:t0ype | sizeof(a) == sizeof(char) || sizeof(a) == sizeof(byte) || sizeof(a) == sizeof(uchar)}
   {n,offset,cap,ucap,refcnt,used_bytes: nat | ucap > 0; used_bytes <= ucap}{dynamic:bool}{l, l1:agz}
-  ( bytes(ucap) @ l1
-  | i: &minus_vt( Bytestring_vtype( n, offset, cap, ucap, refcnt, dynamic, l), bytes(ucap) @ l1) >> Bytestring_vtype( n + used_bytes, offset, cap, ucap - used_bytes, refcnt, dynamic, l)
+  ( array_v(a, l1, ucap)
+  | i: &minus_vt( Bytestring_vtype( n, offset, cap, ucap, refcnt, dynamic, l), array_v(a, l1, ucap)) >> Bytestring_vtype( n + used_bytes, offset, cap, ucap - used_bytes, refcnt, dynamic, l)
   , used_bytes: size_t( used_bytes)
   ):<!wrt>
   void
@@ -571,3 +638,4 @@ fn
   [l1:addr | ( l > null && l1 > null) || l1 == null ]
   [odynamic: bool | ( l > null && odynamic == true) || odynamic == false]
   Bytestring_vtype( len, 0, len, 0, 0, odynamic, l1)
+
