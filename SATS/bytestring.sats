@@ -122,11 +122,11 @@ overload pack with pack_chars_dynamic
 (* O(1) *)
 fn
   pack_char
-  {a:t0ype | sizeof(a) == sizeof(char) || sizeof(a) == sizeof(byte) || sizeof(a) == sizeof(uchar)}
-  ( a: a
+  ( a: char
   ):<!wrt>
   [l:addr | l > null]
   Bytestring_vtype( 1, 0, 1, 0, 0, true, l)
+overload pack with pack_char
 
 (* O(1)
  *)
