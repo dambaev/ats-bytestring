@@ -26,3 +26,5 @@ overload free with $BS.free_bs
 overload free with $BS.free_static_array
 overload free with $BS.unref_bs
 
+
+overload copy with $BS.copy
