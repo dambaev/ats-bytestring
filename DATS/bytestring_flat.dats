@@ -11,6 +11,7 @@ staload UN = "prelude/SATS/unsafe.sats"
 
 %{^
 #include "unistd.h"
+#include "inttypes.h"
 %}
 
 
@@ -946,3 +947,165 @@ implement pack_char(a) = result where {
   val () = array_set_at_guint( !r_ptr, i2sz 0, a1)
   val () = unused_bytes_addback( r_pf | result, i2sz 1)
 }
+
+implement append_bsC_bs( l, r) = result where {
+  val result = append_bs_bs(l, r)
+  val () = free l
+}
+
+implement append_bs_bsC( l, r) = result where {
+  val result = append_bs_bs( l, r)
+  val () = free r
+}
+
+implement pack_int64(i) =
+let
+  var bs: $BS.Bytestring0?
+  val () = bs := $BS.create(i2sz 21) // -9223372036854775807 - min int64 value + NULL
+  val (pf | p, sz) = $BS.bs2unused_bytes{byte}( bs)
+  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 21, PRIi64, i)) where {
+    macdef PRIi64 = $extval( string, "PRIi64")
+  }
+in
+  ifcase
+  | rendered <= 0 => bs where {
+    val () = array_set_at_guint( !p, i2sz 0, $UN.cast{byte} '0')
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz 1)
+  }
+  | rendered > 21 => bs where {
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz 21)
+  }
+  | _ => bs where {
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz rendered)
+  }
+end
+
+implement pack_uint64(i) =
+let
+  var bs: $BS.Bytestring0?
+  val () = bs := $BS.create(i2sz 21) // 18,446,744,073,709,551,615 - max int64 value + NULL
+  val (pf | p, sz) = $BS.bs2unused_bytes{byte}( bs)
+  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 21, PRIu64, i)) where {
+    macdef PRIu64 = $extval( string, "PRIu64")
+  }
+in
+  ifcase
+  | rendered <= 0 => bs where {
+    val () = array_set_at_guint( !p, i2sz 0, $UN.cast{byte} '0')
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz 1)
+  }
+  | rendered > 21 => bs where {
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz 21)
+  }
+  | _ => bs where {
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz rendered)
+  }
+end
+
+implement pack_int32(i) =
+let
+  var bs: $BS.Bytestring0?
+  val () = bs := $BS.create(i2sz 12) // -2,147,483,647 - min int32 value + NULL
+  val (pf | p, sz) = $BS.bs2unused_bytes{byte}( bs)
+  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 12, PRIi32, i)) where {
+    macdef PRIi32 = $extval( string, "PRIi32")
+  }
+in
+  ifcase
+  | rendered <= 0 => bs where {
+    val () = array_set_at_guint( !p, i2sz 0, $UN.cast{byte} '0')
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz 1)
+  }
+  | rendered > 12 => bs where {
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz 12)
+  }
+  | _ => bs where {
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz rendered)
+  }
+end
+
+implement pack_uint32(i) =
+let
+  var bs: $BS.Bytestring0?
+  val () = bs := $BS.create(i2sz 11) // 4294967295 - max int32 value + NULL
+  val (pf | p, sz) = $BS.bs2unused_bytes{byte}( bs)
+  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 11, PRIu32, i)) where {
+    macdef PRIu32 = $extval( string, "PRIu32")
+  }
+in
+  ifcase
+  | rendered <= 0 => bs where {
+    val () = array_set_at_guint( !p, i2sz 0, $UN.cast{byte} '0')
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz 1)
+  }
+  | rendered > 11 => bs where {
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz 11)
+  }
+  | _ => bs where {
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz rendered)
+  }
+end
+
+implement pack_double(i) =
+let
+  var bs: $BS.Bytestring0?
+  val () = bs := $BS.create(i2sz 48) // hard to guess, as depending on platform size in range of 80-128 bits, so the size is quite random
+  val (pf | p, sz) = $BS.bs2unused_bytes{byte}( bs)
+  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 11, "%f", i))
+in
+  ifcase
+  | rendered <= 0 => bs where {
+    val () = array_set_at_guint( !p, i2sz 0, $UN.cast{byte} '0')
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz 1)
+  }
+  | rendered > 48 => bs where {
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz 48)
+  }
+  | _ => bs where {
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz rendered)
+  }
+end
+
+implement pack_int16(i) =
+let
+  var bs: $BS.Bytestring0?
+  val () = bs := $BS.create(i2sz 7) // -32678 - min int32 value + NULL
+  val (pf | p, sz) = $BS.bs2unused_bytes{byte}( bs)
+  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 7, PRIi16, i)) where {
+    macdef PRIi16 = $extval( string, "PRIi16")
+  }
+in
+  ifcase
+  | rendered <= 0 => bs where {
+    val () = array_set_at_guint( !p, i2sz 0, $UN.cast{byte} '0')
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz 1)
+  }
+  | rendered > 7 => bs where {
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz 7)
+  }
+  | _ => bs where {
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz rendered)
+  }
+end
+
+implement pack_uint16(i) =
+let
+  var bs: $BS.Bytestring0?
+  val () = bs := $BS.create(i2sz 6) // 65535 - max int32 value + NULL
+  val (pf | p, sz) = $BS.bs2unused_bytes{byte}( bs)
+  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 6, PRIu16, i)) where {
+    macdef PRIu16 = $extval( string, "PRIu16")
+  }
+in
+  ifcase
+  | rendered <= 0 => bs where {
+    val () = array_set_at_guint( !p, i2sz 0, $UN.cast{byte} '0')
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz 1)
+  }
+  | rendered > 6 => bs where {
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz 6)
+  }
+  | _ => bs where {
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz rendered)
+  }
+end

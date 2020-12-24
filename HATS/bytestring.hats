@@ -13,6 +13,15 @@ overload + with $BS.appendC
 infixl (+) ++
 overload ++ with $BS.growC
 
+infixl (+) +!
+overload +! with $BS.append_bsC_bs
+
+infixl (+) !+!
+overload !+! with $BS.append_bs_bs
+
+infixl (+) !+
+overload !+ with $BS.append_bs_bsC
+
 overload length with $BS.length_bs
 
 overload [] with $BS.get_byte_at_uint

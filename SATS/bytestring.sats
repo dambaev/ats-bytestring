@@ -128,6 +128,78 @@ fn
   Bytestring_vtype( 1, 0, 1, 0, 0, true, l)
 overload pack with pack_char
 
+(* O(1) *)
+fn
+  pack_double
+  ( i: double
+  ):<!wrt>
+  [len,cap:pos | cap >= len][ucap:nat][l:addr | l > null]
+  Bytestring_vtype( len, 0, cap, ucap, 0, true, l)
+overload pack with pack_double
+
+(* O(1) *)
+fn
+  pack_int16
+  ( i: int16
+  ):<!wrt>
+  [len,cap:pos | cap >= len][ucap:nat][l:addr | l > null]
+  Bytestring_vtype( len, 0, cap, ucap, 0, true, l)
+overload pack with pack_int16
+
+(* O(1) *)
+fn
+  pack_uint16
+  ( i: uint16
+  ):<!wrt>
+  [len,cap:pos | cap >= len][ucap:nat][l:addr | l > null]
+  Bytestring_vtype( len, 0, cap, ucap, 0, true, l)
+overload pack with pack_uint16
+
+(* O(1) *)
+fn
+  pack_int32
+  ( i: int32
+  ):<!wrt>
+  [len,cap:pos | cap >= len][ucap:nat][l:addr | l > null]
+  Bytestring_vtype( len, 0, cap, ucap, 0, true, l)
+overload pack with pack_int32
+
+(* O(1) *)
+fn
+  pack_uint32
+  ( i: uint32
+  ):<!wrt>
+  [len,cap:pos | cap >= len][ucap:nat][l:addr | l > null]
+  Bytestring_vtype( len, 0, cap, ucap, 0, true, l)
+overload pack with pack_uint32
+
+(* O(1) *)
+fn
+  pack_uint64
+  ( i: uint64
+  ):<!wrt>
+  [len,cap:pos | cap >= len][ucap:nat][l:addr | l > null]
+  Bytestring_vtype( len, 0, cap, ucap, 0, true, l)
+overload pack with pack_uint64
+
+(* O(1) *)
+fn
+  pack_int64
+  ( i: int64
+  ):<!wrt>
+  [len,cap:pos | cap >= len][ucap:nat][l:addr | l > null]
+  Bytestring_vtype( len, 0, cap, ucap, 0, true, l)
+overload pack with pack_int64
+
+(* O(1) *)
+fn
+  pack_bool
+  ( i: bool
+  ):<!wrt>
+  [len,cap:pos | cap >= len][ucap:nat][l:addr | l > null]
+  Bytestring_vtype( len, 0, cap, ucap, 0, true, l)
+overload pack with pack_bool
+
 (* O(1)
  *)
 fn
@@ -265,6 +337,36 @@ fn
   #[l:addr | l > null]
   Bytestring_vtype( l_len+r_len, 0, l_len+r_len, 0, 0, true, l)
 overload append with append_bs_bs
+
+(* O(l_len + r_len) 
+  creates new bytestring with content of r appended to l. does not consumes l and r 
+  this function is always creates new Bytestring
+*)
+fn
+  append_bs_bsC
+  {l_len, l_offset, l_cap, l_ucap, l_refcnt: nat | l_len > 0}{l_dynamic:bool}{l_p:agz}
+  {r_len, r_offset, r_cap, r_ucap: nat | r_len > 0}{r_dynamic:bool}{r_p:agz}
+  ( l: !Bytestring_vtype(l_len, l_offset, l_cap, l_ucap, l_refcnt, l_dynamic, l_p)
+  , r: Bytestring_vtype(r_len, r_offset, r_cap, r_ucap, 0, r_dynamic, r_p)
+  ):<!wrt>
+  #[l:addr | l > null]
+  Bytestring_vtype( l_len+r_len, 0, l_len+r_len, 0, 0, true, l)
+overload append with append_bs_bsC
+
+(* O(l_len + r_len) 
+  creates new bytestring with content of r appended to l. does not consumes l and r 
+  this function is always creates new Bytestring
+*)
+fn
+  append_bsC_bs
+  {l_len, l_offset, l_cap, l_ucap: nat | l_len > 0}{l_dynamic:bool}{l_p:agz}
+  {r_len, r_offset, r_cap, r_ucap, r_refcnt: nat | r_len > 0}{r_dynamic:bool}{r_p:agz}
+  ( l: Bytestring_vtype(l_len, l_offset, l_cap, l_ucap, 0, l_dynamic, l_p)
+  , r: !Bytestring_vtype(r_len, r_offset, r_cap, r_ucap, r_refcnt, r_dynamic, r_p)
+  ):<!wrt>
+  #[l:addr | l > null]
+  Bytestring_vtype( l_len+r_len, 0, l_len+r_len, 0, 0, true, l)
+overload append with append_bsC_bs
 
 (* O(n + 1)
    creates new Bytestring with appending given character into the end of it
@@ -639,3 +741,9 @@ fn
   [odynamic: bool | ( l > null && odynamic == true) || odynamic == false]
   Bytestring_vtype( len, 0, len, 0, 0, odynamic, l1)
 
+fn
+  parse_uint32
+  {len,offset,cap,ucap,refcnt: nat | len > 0}{dynamic:bool}{l:agz}
+  ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
+  ):<!wrt>
+  Option_vt( uint32)
