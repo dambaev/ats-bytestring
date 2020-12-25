@@ -18,8 +18,6 @@ absvt0ype
   | ( size_t (* len *)
     , size_t (* offset *)
     , size_t (* capacity *)
-    , size_t (* available capacity *)
-    , size_t (* refcnt *)
     , bool (* is dynamically allocated *)
     , ptr
     )
@@ -38,7 +36,7 @@ vtypedef
   Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamically_allocated,l)
 
 vtypedef
-  Bytestring(len:int) =
+  BytestringSH(len:int) =
   {len: nat}[offset,cap,ucap,refcnt:nat][dynamically_allocated:bool][l:agz]
   Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamically_allocated,l)
 
@@ -65,7 +63,7 @@ prfun
   {n,offset,cap,ucap,refcnt:nat}{dynamic:bool}{l:addr}
   ( v: !Bytestring_vtype(n, offset,cap,ucap,refcnt,dynamic,l)
   ):
-  [ ( n > 0 && l > null); (cap > 0 && l > null); (l > null && n >= 0); n+offset <= cap; offset+n+ucap <= cap ] (* n should not exceed capacity *)
+  [ ( n > 0 && l > null); (cap > 0 && l > null); (l > null && n >= 0); n+offset <= cap; offset+n+ucap <= cap; (ucap == cap - offset - n || ucap == 0) ] (* n should not exceed capacity *)
   void
 
 (* O(1)
@@ -246,28 +244,12 @@ fn
   {r_len, r_offset, r_cap, r_ucap: nat}{r_dynamic:bool}{l:addr}
   {o_len, o_offset, o_cap, o_ucap: nat}{o_refcnt: nat | o_refcnt > 0}{o_dynamic:bool}{l:addr}
   ( consume: Bytestring_vtype( r_len, r_offset, r_cap, r_ucap, 1, r_dynamic, l)
-  , preserve: &Bytestring_vtype( o_len, o_offset, o_cap, o_ucap, o_refcnt, o_dynamic, l) >> Bytestring_vtype( o_len, o_offset, o_cap, o_ucap, o_refcnt - 1, o_dynamic, l)
+  , preserve: !Bytestring_vtype( o_len, o_offset, o_cap, o_ucap, o_refcnt, o_dynamic, l) >> Bytestring_vtype( o_len, o_offset, o_cap, o_ucap, o_refcnt - 1, o_dynamic, l)
   ):<!wrt>
   void
   
 
 overload free with unref_bs
-
-(* O(1)
- *)
-fn
-  isnot_shared
-  {len,offset,cap,ucap,refcnt:nat}{dynamic:bool}{l:addr}
-  ( i: !Bytestring_vtype(len,offset,cap,ucap,refcnt,dynamic,l)
-  ):<> bool( refcnt == 0)
-
-(* O(1)
- *)
-fn
-  is_shared
-  {len,offset,cap,ucap,refcnt:nat}{dynamic:bool}{l:addr}
-  ( i: !Bytestring_vtype(len,offset,cap,ucap,refcnt,dynamic,l)
-  ):<> bool( refcnt > 0)
 
 (* O(1)
  *)
@@ -450,26 +432,10 @@ fn
 (* O(1)
  *)
 fn
-  reference_count
-  { len, offset, cap, ucap, refcnt:nat}{dynamic:bool}{l:addr}
-  ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
-  ):<> size_t( refcnt)
-
-(* O(1)
- *)
-fn
   capacity
   { len, offset, cap, ucap, refcnt:nat}{dynamic:bool}{l:addr}
   ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
   ):<> size_t( cap)
-
-(* O(1)
- *)
-fn
-  unused_capacity
-  { len, offset, cap, ucap, refcnt:nat}{dynamic:bool}{l:addr}
-  ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
-  ):<> size_t( ucap)
 
 (* O(1)
  *)
@@ -501,7 +467,7 @@ fn
 fn
   ref_bs_child
   { len, offset, cap, ucap, refcnt:nat}{dynamic:bool}{l:addr}
-  ( i: &Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, 0, refcnt + 1, dynamic, l)
+  ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, 0, refcnt + 1, dynamic, l)
   ):<!wrt>
   Bytestring_vtype( len, offset, cap, ucap, 1, dynamic, l)
 
@@ -510,7 +476,7 @@ fn
 fn
   ref_bs_parent
   { len, offset, cap, ucap, refcnt:nat}{dynamic:bool}{l:addr}
-  ( i: &Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, ucap, refcnt + 1, dynamic, l)
+  ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, ucap, refcnt + 1, dynamic, l)
   ):<!wrt>
   Bytestring_vtype( len, offset, cap, 0, 1, dynamic, l)
 
@@ -549,7 +515,7 @@ fn
   {n:nat}
   {len, offset, cap, ucap, refcnt: nat | len >= n}{dynamic:bool}{l:addr}
   ( n: size_t n
-  , i: &Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, ucap, refcnt + 1, dynamic, l)
+  , i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, ucap, refcnt + 1, dynamic, l)
   ):<!wrt>
   Bytestring_vtype( n, offset, cap, 0, 1, dynamic, l)
   
@@ -572,7 +538,7 @@ fn
   {n:nat}
   {len, offset, cap, ucap, refcnt: nat | len >= n}{dynamic:bool}{l:addr}
   ( n: size_t n
-  , i: &Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, 0, refcnt + 1, dynamic, l)
+  , i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, 0, refcnt + 1, dynamic, l)
   ):<!wrt>
   Bytestring_vtype( len - n, offset + n, cap, ucap, 1, dynamic, l)
   
@@ -591,7 +557,7 @@ fn
  *)
 fn
   println
-  ( i: !Bytestring1
+  ( i: !BytestringNSH1
   ): void
 
 (* O(n)
@@ -605,51 +571,44 @@ fn
  *)
 fn
   bs2bytes
-  {a:t0ype | sizeof(a) == sizeof(char) || sizeof(a) == sizeof(byte) || sizeof(a) == sizeof(uchar)}
-  {n,offset,cap,ucap,refcnt: nat | cap > 0}{dynamic:bool}{l:addr}
-  ( i: !Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l) >> minus_vt( Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l), array_v(a, l1, n))
+  {len,offset,cap,ucap,refcnt: nat | cap > 0}{dynamic:bool}{l:addr}
+  ( i: !Bytestring_vtype(len,offset,cap,ucap,refcnt,dynamic,l) >> minus_vt( Bytestring_vtype(len,offset,cap,ucap,refcnt,dynamic,l), array_v(char, l+offset*sizeof(char), len))
   ):<>
-  #[l1:agz]
-  ( array_v(a, l1, n)
-  | ptr l1
-  , size_t(n)
+  ( array_v(char, l+offset*sizeof(char), len)
+  | ptr (l+offset*sizeof(char))
+  , size_t(len)
   )
 
 (* O(1)
  *)
 praxi
   bytes_addback
-  {a:t0ype | sizeof(a) == sizeof(char) || sizeof(a) == sizeof(byte) || sizeof(a) == sizeof(uchar)}
-  {n,offset,cap,ucap,refcnt: nat | cap > 0}{dynamic:bool}{l, l1:addr}
-  ( array_v(a, l1, n)
-  | i: !minus_vt( Bytestring_vtype( n, offset, cap, ucap, refcnt, dynamic, l), array_v(a, l1, n)) >> Bytestring_vtype( n, offset, cap, ucap, refcnt, dynamic, l)
+  {len,offset,cap,ucap,refcnt: nat | cap > 0}{dynamic:bool}{l:addr}
+  ( array_v(char, l+offset*sizeof(char), len)
+  | i: !minus_vt( Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l), array_v(char, l+offset*sizeof(char), len)) >> Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
   ):<>
   void
 
 (* O(1) *)
 fn
   bs2unused_bytes
-  {a:t0ype | sizeof(a) == sizeof(char) || sizeof(a) == sizeof(byte) || sizeof(a) == sizeof(uchar)}
-  {n,offset,cap,ucap,refcnt: nat | ucap > 0}{dynamic:bool}{l:agz}
-  ( i: !Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l) >> minus_vt( Bytestring_vtype(n,offset,cap,ucap,refcnt,dynamic,l), array_v(a, l1, ucap))
+  {len,offset,cap,refcnt: nat | cap - offset - len > 0}{dynamic:bool}{l:agz}
+  ( i: !Bytestring_vtype(len,offset,cap,cap - offset - len,refcnt,dynamic,l) >> minus_vt( Bytestring_vtype(len,offset,cap,cap - offset - len,refcnt,dynamic,l), array_v(char, l+(offset+len)*sizeof(char), cap - offset - len))
   ):<>
-  #[l1:agz]
-  ( array_v(a, l1, ucap)
-  | ptr l1
-  , size_t(ucap)
+  ( array_v(char, l+(offset+len)*sizeof(char), cap - offset - len)
+  | ptr (l+(offset+len)*sizeof(char))
+  , size_t(cap - offset - len)
   )
 
 (* O(1) *)
 fn
   unused_bytes_addback
-  {a:t0ype | sizeof(a) == sizeof(char) || sizeof(a) == sizeof(byte) || sizeof(a) == sizeof(uchar)}
-  {n,offset,cap,ucap,refcnt,used_bytes: nat | ucap > 0; used_bytes <= ucap}{dynamic:bool}{l, l1:agz}
-  ( array_v(a, l1, ucap)
-  | i: &minus_vt( Bytestring_vtype( n, offset, cap, ucap, refcnt, dynamic, l), array_v(a, l1, ucap)) >> Bytestring_vtype( n + used_bytes, offset, cap, ucap - used_bytes, refcnt, dynamic, l)
+  {len,offset,cap,ucap,refcnt,used_bytes: nat | ucap > 0; used_bytes <= ucap}{dynamic:bool}{l:agz}
+  ( array_v(char, l+(offset+len)*sizeof(char), ucap)
+  | i: &minus_vt( Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l), array_v(char, l+(offset+len)*sizeof(char), ucap)) >> Bytestring_vtype( len + used_bytes, offset, cap, ucap - used_bytes, refcnt, dynamic, l)
   , used_bytes: size_t( used_bytes)
   ):<!wrt>
   void
-  
 
 (* O(1)
  *)
@@ -657,7 +616,7 @@ fn
   take1
   {len,offset,cap,ucap,refcnt,n: nat}{dynamic:bool}{l:addr}
   ( n: size_t n
-  , i: &Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype(len, offset, cap, ucap, refcnt + 1, dynamic, l)
+  , i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype(len, offset, cap, ucap, refcnt + 1, dynamic, l)
   ):<!wrt>
   [newlen: nat | (n >= len && newlen == len) || (n < len && newlen == n)]
   Bytestring_vtype( newlen, offset, cap, 0, 1, dynamic, l)
@@ -669,7 +628,7 @@ fn
   {c_len,c_offset,cap,c_ucap: nat}{dynamic:bool}{l:addr}
   {p_len,p_offset,p_ucap,p_refcnt: nat | p_refcnt > 0}
   ( consume: Bytestring_vtype( c_len, c_offset, cap, c_ucap, 1, dynamic, l)
-  , preserve: &Bytestring_vtype( p_len, p_offset, cap, p_ucap, p_refcnt, dynamic, l) >> Bytestring_vtype( p_len, p_offset, cap, p_ucap, p_refcnt - 1, dynamic, l)
+  , preserve: !Bytestring_vtype( p_len, p_offset, cap, p_ucap, p_refcnt, dynamic, l) >> Bytestring_vtype( p_len, p_offset, cap, p_ucap, p_refcnt - 1, dynamic, l)
   ):<!wrt>
   void
   
@@ -680,7 +639,7 @@ fn
   ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
   , n: size_t n
   ):<>
-  uchar
+  char
 
 (* O(1) *)
 fn
@@ -689,7 +648,7 @@ fn
   ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
   , n: int n
   ):<>
-  uchar
+  char
 
 (* O(1) *)
 fn
@@ -713,8 +672,8 @@ fn
 fn
   split_on
   {len,offset,cap,ucap,refcnt: nat}{dynamic:bool}{l:addr}
-  ( delim: uchar
-  , i: &Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, ucap, refcnt + cnt, dynamic, l)
+  ( delim: char
+  , i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, ucap, refcnt + cnt, dynamic, l)
   ):<!wrt>
   #[cnt:nat]
   list_vt( [olen, ooffset:nat] Bytestring_vtype( olen, ooffset, cap, 0, 1, dynamic, l), cnt)
@@ -725,8 +684,8 @@ fn
   take_while
   {len, offset, cap, ucap, refcnt: nat}{dynamic:bool}{l:addr}
   ( env: !env >> _
-  , f: (!env, uchar)-<> bool
-  , i: &Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, ucap, refcnt + 1, dynamic, l)
+  , f: (!env, char)-<> bool
+  , i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, ucap, refcnt + 1, dynamic, l)
   ):<!wrt>
   [olen, ooffset: nat]
   Bytestring_vtype( olen, ooffset, cap, 0, 1, dynamic, l)

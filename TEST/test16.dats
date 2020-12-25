@@ -5,17 +5,11 @@
 #include "HATS/bytestring.hats"
 staload BS="SATS/bytestring.sats"
 
-extern castfn
-  c2uc
-  {c:int | c > 0}
-  ( i: char(c)
-  ):<> uchar(c)
-
 fn test0():void = {
   var s: $BS.Bytestring0?
   val () = s := $BS.pack "abacada"
   var elements: List_vt($BS.Bytestring0)?
-  val () = elements := $BS.split_on( c2uc 'a', s)
+  val () = elements := $BS.split_on( 'a', s)
   val () = assertloc( list_vt_length( elements) = 5)
   val v = list_vt_takeout_at( elements, 0)
   val () = assertloc( $BS.eq_bytestring_bytestringC( v, $BS.empty()))
@@ -45,7 +39,7 @@ fn test1(): void = {
   var s: $BS.Bytestring0?
   val () = s := $BS.pack "bbb"
   var elements: List_vt($BS.Bytestring0)?
-  val () = elements := $BS.split_on( c2uc 'a', s)
+  val () = elements := $BS.split_on( 'a', s)
   val () = assertloc( list_vt_length( elements) = 1)
 
   val v = list_vt_takeout_at( elements, 0)
@@ -60,7 +54,7 @@ fn test2(): void = {
   var s: $BS.Bytestring0?
   val () = s := $BS.pack ""
   var elements: List_vt($BS.Bytestring0)?
-  val () = elements := $BS.split_on( c2uc 'a', s)
+  val () = elements := $BS.split_on( 'a', s)
   val () = assertloc( list_vt_length( elements) = 0)
 
   val ~list_vt_nil() = elements

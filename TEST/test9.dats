@@ -8,14 +8,13 @@ staload BS="SATS/bytestring.sats"
 fn
   test()
   :
-  $BS.Bytestring1 = bs where {
+  $BS.BytestringNSH1 = bs where {
   val s = "hello"
   val bs = $BS.pack s
 }
 
 implement main0() = {
   val s = test()
-  val () = assertloc( $BS.isnot_shared s)
   val s1 = $BS.pack "hello"
   val () = assertloc( s = s1)
   val () = $BS.free s

@@ -13,7 +13,10 @@ implement main0() = {
   var r1: $BS.Bytestring0
   val () = r1 := $BS.pack "test1test2test3"
   var r2: $BS.Bytestring0
+  val () = $BS.println( s1)
   val () = r2 := s1 + s2 + s3 
+  val () = $BS.println( r1)
+  val () = $BS.println( r2)
   val () = assertloc( r1 = r2)
   val r3 = $BS.drop( i2sz(1), r2) // 1
   val r4 = $BS.drop( i2sz(1), r1)
