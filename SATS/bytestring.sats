@@ -595,6 +595,7 @@ fn
   {len,offset,cap,refcnt: nat | cap - offset - len > 0}{dynamic:bool}{l:agz}
   ( i: !Bytestring_vtype(len,offset,cap,cap - offset - len,refcnt,dynamic,l) >> minus_vt( Bytestring_vtype(len,offset,cap,cap - offset - len,refcnt,dynamic,l), array_v(char, l+(offset+len)*sizeof(char), cap - offset - len))
   ):<>
+  [ (l + (offset+len)*sizeof(char)) > null]
   ( array_v(char, l+(offset+len)*sizeof(char), cap - offset - len)
   | ptr (l+(offset+len)*sizeof(char))
   , size_t(cap - offset - len)
@@ -644,7 +645,7 @@ fn
 (* O(1) *)
 fn
   get_byte_at_int
-  {n,len,offset,cap,ucap,refcnt: nat | n < len}{dynamic:bool}{l:addr}
+  {n,len,offset,cap,ucap,refcnt: nat | n < len}{dynamic:bool}{l:agz}
   ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
   , n: int n
   ):<>
@@ -702,7 +703,7 @@ fn
 
 fn
   parse_uint32
-  {len,offset,cap,ucap,refcnt: nat | len > 0}{dynamic:bool}{l:agz}
+  {len,offset,cap,ucap,refcnt: nat}{dynamic:bool}{l:addr}
   ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
   ):<!wrt>
   Option_vt( uint32)

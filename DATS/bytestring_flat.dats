@@ -564,7 +564,7 @@ implement bs2unused_bytes{n,offset,cap,refcnt}{dynamic}{l}(i) = ret where {
   val (len, offset, cap, dynamic, p) = impl
   prval succ_vb( pf0) = rpf
   prval (pf, fpf) = pf0
-  val ptr = ptr_add<char>( p, offset + len)
+  val ptr = ptr1_add_sz<char>( p, offset + len)
   prval () = rpf := succ_vb( (pf, fpf))
 
   prval () = bs_takeback_struct( rpf | i)
@@ -905,9 +905,7 @@ let
   var bs: BytestringNSH0?
   val () = bs := $BS.create(i2sz 12) // -2,147,483,647 - min int32 value + NULL
   val (pf | p, sz) = $BS.bs2unused_bytes( bs)
-  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 12, PRIi32, i)) where {
-    macdef PRIi32 = $extval( string, "PRIi32")
-  }
+  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 12, "%i", i))
 in
   ifcase
   | rendered <= 0 => bs where {
@@ -927,9 +925,7 @@ let
   var bs: BytestringNSH0?
   val () = bs := $BS.create(i2sz 11) // 4294967295 - max int32 value + NULL
   val (pf | p, sz) = $BS.bs2unused_bytes( bs)
-  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 11, PRIu32, i)) where {
-    macdef PRIu32 = $extval( string, "PRIu32")
-  }
+  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 11, "%u", i))
 in
   ifcase
   | rendered <= 0 => bs where {
@@ -1007,3 +1003,10 @@ in
     val () = $BS.unused_bytes_addback( pf | bs, i2sz rendered)
   }
 end
+
+implement parse_uint32( i) = Some_vt( $UN.cast{uint32} v) where {
+  prval _ = lemma_bytestring_param(i)
+  val (pf | p, sz) = bs2bytes( i)
+  val v = $extfcall(int, "atoi", p)
+  prval _ = bytes_addback( pf | i)
+}
