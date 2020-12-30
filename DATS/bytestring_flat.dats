@@ -861,9 +861,16 @@ let
   var bs: BytestringNSH0?
   val () = bs := $BS.create(i2sz 21) // -9223372036854775807 - min int64 value + NULL
   val (pf | p, sz) = $BS.bs2unused_bytes( bs)
-  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 21, PRIi64, i)) where {
-    macdef PRIi64 = $extval( string, "PRIi64")
+  val format_bs = $BS.pack '%' + $BS.pack_string PRIi64 where {
+    macdef PRIi640 = $extval( string, "PRIi64")
+    val PRIi64 = believeme( PRIi640, g1ofg0( length PRIi640)) where {
+      extern castfn believeme{n:nat}( i: string, sz: size_t(n)):<> [n > 0] string(n)
+    }
   }
+  val ( format_pf | format_p, _) = $BS.bs2bytes( format_bs)
+  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 21, format_p, i))
+  prval () = $BS.bytes_addback( format_pf | format_bs)
+  val () = free format_bs
 in
   ifcase
   | rendered <= 0 => bs where {
@@ -883,9 +890,16 @@ let
   var bs: BytestringNSH0?
   val () = bs := $BS.create(i2sz 21) // 18,446,744,073,709,551,615 - max int64 value + NULL
   val (pf | p, sz) = $BS.bs2unused_bytes( bs)
-  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 21, PRIu64, i)) where {
-    macdef PRIu64 = $extval( string, "PRIu64")
+  val format_bs = $BS.pack '%' + $BS.pack_string PRIu64 where {
+    macdef PRIu640 = $extval( string, "PRIu64")
+    val PRIu64 = believeme( PRIu640, g1ofg0( length PRIu640)) where {
+      extern castfn believeme{n:nat}( i: string, sz: size_t(n)):<> [n > 0] string(n)
+    }
   }
+  val ( format_pf | format_p, _) = $BS.bs2bytes( format_bs)
+  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 21, format_p, i))
+  prval () = $BS.bytes_addback( format_pf | format_bs)
+  val () = free format_bs
 in
   ifcase
   | rendered <= 0 => bs where {
@@ -902,10 +916,19 @@ end
 
 implement pack_int32(i) =
 let
+  val format_bs = $BS.pack '%' + $BS.pack_string PRIi32 where {
+    macdef PRIi320 = $extval( string, "PRIi32")
+    val PRIi32 = believeme( PRIi320, g1ofg0( length PRIi320)) where {
+      extern castfn believeme{n:nat}( i: string, sz: size_t(n)):<> [n > 0] string(n)
+    }
+  }
+  val ( format_pf | format_p, _) = $BS.bs2bytes( format_bs)
   var bs: BytestringNSH0?
   val () = bs := $BS.create(i2sz 12) // -2,147,483,647 - min int32 value + NULL
   val (pf | p, sz) = $BS.bs2unused_bytes( bs)
-  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 12, "%i", i))
+  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 12, format_p, i))
+  prval () = $BS.bytes_addback( format_pf | format_bs)
+  val () = free format_bs
 in
   ifcase
   | rendered <= 0 => bs where {
@@ -922,10 +945,19 @@ end
 
 implement pack_uint32(i) =
 let
+  val format_bs = $BS.pack '%' + $BS.pack_string PRIu32 where {
+    macdef PRIu320 = $extval( string, "PRIu32")
+    val PRIu32 = believeme( PRIu320, g1ofg0( length PRIu320)) where {
+      extern castfn believeme{n:nat}( i: string, sz: size_t(n)):<> [n > 0] string(n)
+    }
+  }
+  val ( format_pf | format_p, _) = $BS.bs2bytes( format_bs)
   var bs: BytestringNSH0?
   val () = bs := $BS.create(i2sz 11) // 4294967295 - max int32 value + NULL
   val (pf | p, sz) = $BS.bs2unused_bytes( bs)
-  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 11, "%u", i))
+  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 11, format_p, i))
+  prval () = $BS.bytes_addback( format_pf | format_bs)
+  val () = free format_bs
 in
   ifcase
   | rendered <= 0 => bs where {
@@ -962,12 +994,19 @@ end
 
 implement pack_int16(i) =
 let
+  val format_bs = $BS.pack '%' + $BS.pack_string PRIi16 where {
+    macdef PRIi160 = $extval( string, "PRIi16")
+    val PRIi16 = believeme( PRIi160, g1ofg0( length PRIi160)) where {
+      extern castfn believeme{n:nat}( i: string, sz: size_t(n)):<> [n > 0] string(n)
+    }
+  }
+  val ( format_pf | format_p, _) = $BS.bs2bytes( format_bs)
   var bs: BytestringNSH0?
   val () = bs := $BS.create(i2sz 7) // -32678 - min int32 value + NULL
   val (pf | p, sz) = $BS.bs2unused_bytes( bs)
-  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 7, PRIi16, i)) where {
-    macdef PRIi16 = $extval( string, "PRIi16")
-  }
+  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 7, format_p, i))
+  prval () = $BS.bytes_addback( format_pf | format_bs)
+  val () = free format_bs
 in
   ifcase
   | rendered <= 0 => bs where {
@@ -984,12 +1023,19 @@ end
 
 implement pack_uint16(i) =
 let
+  val format_bs = $BS.pack '%' + $BS.pack_string PRIu16 where {
+    macdef PRIu160 = $extval( string, "PRIu16")
+    val PRIu16 = believeme( PRIu160, g1ofg0( length PRIu160)) where {
+      extern castfn believeme{n:nat}( i: string, sz: size_t(n)):<> [n > 0] string(n)
+    }
+  }
+  val ( format_pf | format_p, _) = $BS.bs2bytes( format_bs)
   var bs: BytestringNSH0?
   val () = bs := $BS.create(i2sz 6) // 65535 - max int32 value + NULL
   val (pf | p, sz) = $BS.bs2unused_bytes( bs)
-  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 6, PRIu16, i)) where {
-    macdef PRIu16 = $extval( string, "PRIu16")
-  }
+  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 6, format_p, i))
+  prval () = $BS.bytes_addback( format_pf | format_bs)
+  val () = free format_bs
 in
   ifcase
   | rendered <= 0 => bs where {
