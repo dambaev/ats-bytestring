@@ -1012,7 +1012,7 @@ let
   var bs: BytestringNSH0?
   val () = bs := $BS.create(i2sz 48) // hard to guess, as depending on platform size in range of 80-128 bits, so the size is quite random
   val (pf | p, sz) = $BS.bs2unused_bytes( bs)
-  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 11, "%f", i))
+  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 48, "%f\0", i))
 in
   ifcase
   | rendered <= 0 => bs where {
