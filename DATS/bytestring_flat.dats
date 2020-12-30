@@ -881,10 +881,13 @@ let
     }
   }
   var format_bs = create(length PRI_fmt_bs + 2) ++ $BS.pack '%' ++ PRI_fmt_bs
+  val (fmt_pf | fmt_p, fmt_sz) = bs2unused_bytes( format_bs)
+  val () = array_set_at_guint( !fmt_p, i2sz 0, $UN.cast{char} 0)
+  val () = unused_bytes_addback( fmt_pf | format_bs, i2sz 0)
+  val ( format_pf | format_p, _) = $BS.bs2bytes( format_bs)
   var bs: BytestringNSH0?
   val () = bs := $BS.create(i2sz 21) // -9223372036854775807 - min int64 value + NULL
   val (pf | p, sz) = $BS.bs2unused_bytes( bs)
-  val ( format_pf | format_p, _) = $BS.bs2bytes( format_bs)
   val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 21, format_p, i))
   prval () = $BS.bytes_addback( format_pf | format_bs)
   val () = free format_bs
@@ -912,6 +915,9 @@ let
     }
   }
   var format_bs = create(length PRI_fmt_bs + 2) ++ $BS.pack '%' ++ PRI_fmt_bs
+  val (fmt_pf | fmt_p, fmt_sz) = bs2unused_bytes( format_bs)
+  val () = array_set_at_guint( !fmt_p, i2sz 0, $UN.cast{char} 0)
+  val () = unused_bytes_addback( fmt_pf | format_bs, i2sz 0)
   val ( format_pf | format_p, _) = $BS.bs2bytes( format_bs)
   var bs: BytestringNSH0?
   val () = bs := $BS.create(i2sz 21) // 18,446,744,073,709,551,615 - max int64 value + NULL
@@ -943,6 +949,9 @@ let
     }
   }
   var format_bs = create(length PRI_fmt_bs + 2) ++ $BS.pack '%' ++ PRI_fmt_bs
+  val (fmt_pf | fmt_p, fmt_sz) = bs2unused_bytes( format_bs)
+  val () = array_set_at_guint( !fmt_p, i2sz 0, $UN.cast{char} 0)
+  val () = unused_bytes_addback( fmt_pf | format_bs, i2sz 0)
   val ( format_pf | format_p, _) = $BS.bs2bytes( format_bs)
   var bs: BytestringNSH0?
   val () = bs := $BS.create(i2sz 12) // -2,147,483,647 - min int32 value + NULL
@@ -974,6 +983,9 @@ let
     }
   }
   var format_bs = create(length PRI_fmt_bs + 2) ++ $BS.pack '%' ++ PRI_fmt_bs
+  val (fmt_pf | fmt_p, fmt_sz) = bs2unused_bytes( format_bs)
+  val () = array_set_at_guint( !fmt_p, i2sz 0, $UN.cast{char} 0)
+  val () = unused_bytes_addback( fmt_pf | format_bs, i2sz 0)
   val ( format_pf | format_p, _) = $BS.bs2bytes( format_bs)
   var bs: BytestringNSH0?
   val () = bs := $BS.create(i2sz 11) // 4294967295 - max int32 value + NULL
