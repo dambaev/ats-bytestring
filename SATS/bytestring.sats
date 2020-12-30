@@ -563,6 +563,20 @@ fn
 (* O(n)
  *)
 fn
+  eprintln
+  ( i: !BytestringNSH1
+  ): void
+
+(* O(n)
+ *)
+fn
+  eprintlnC
+  ( i: BytestringNSH1
+  ): void
+
+(* O(n)
+ *)
+fn
   printlnC
   ( i: BytestringNSH1
   ): void

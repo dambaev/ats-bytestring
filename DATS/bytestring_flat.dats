@@ -539,6 +539,21 @@ implement printlnC(i) = {
   val () = free( i)
 }
 
+implement eprintln(i) = {
+  prval () = lemma_bytestring_param(i)
+  val ( rpf | impl) = bs_takeout_struct(i)
+  val (len, offset, cap, dynamic, p) = impl
+  val ptr = ptr_add<char>( p, offset)
+  val _ = $extfcall( int, "write", 2, ptr, len)
+  val _ = $extfcall( int, "write", 2, "\n", 1)
+  prval () = bs_takeback_struct( rpf | i)
+}
+implement eprintlnC(i) = {
+  prval () = lemma_bytestring_param(i)
+  val () = eprintln(i)
+  val () = free( i)
+}
+
 implement bs2bytes{n,offset,cap,ucap,refcnt}{dynamic}{l}(i) = ret where {
   prval () = lemma_bytestring_param(i)
   val (rpf | impl) = bs_takeout_struct(i)
