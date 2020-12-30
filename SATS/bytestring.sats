@@ -557,14 +557,14 @@ fn
  *)
 fn
   println
-  ( i: !BytestringNSH1
+  ( i: !Bytestring1
   ): void
 
 (* O(n)
  *)
 fn
   eprintln
-  ( i: !BytestringNSH1
+  ( i: !Bytestring1
   ): void
 
 (* O(n)
