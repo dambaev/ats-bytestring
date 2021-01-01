@@ -1027,6 +1027,26 @@ in
   }
 end
 
+implement pack_float(i) =
+let
+  var bs: BytestringNSH0?
+  val () = bs := $BS.create(i2sz 48) // hard to guess, as depending on platform size in range of 80-128 bits, so the size is quite random
+  val (pf | p, sz) = $BS.bs2unused_bytes( bs)
+  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 48, "%f\0", i))
+in
+  ifcase
+  | rendered <= 0 => bs where {
+    val () = array_set_at_guint( !p, i2sz 0, '0')
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz 1)
+  }
+  | rendered > 48 => bs where {
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz 48)
+  }
+  | _ => bs where {
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz rendered)
+  }
+end
+
 implement pack_int16(i) =
 let
   val PRI_fmt_bs = pack PRI_fmt where {

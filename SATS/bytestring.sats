@@ -137,6 +137,15 @@ overload pack with pack_double
 
 (* O(1) *)
 fn
+  pack_float
+  ( i: float
+  ):<!wrt>
+  [len,cap:pos | cap >= len][ucap:nat][l:addr | l > null]
+  Bytestring_vtype( len, 0, cap, ucap, 0, true, l)
+overload pack with pack_float
+
+(* O(1) *)
+fn
   pack_int16
   ( i: int16
   ):<!wrt>
