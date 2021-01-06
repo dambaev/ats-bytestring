@@ -1047,6 +1047,74 @@ in
   }
 end
 
+implement pack_int8(i) =
+let
+  val PRI_fmt_bs = pack PRI_fmt where {
+    macdef PRI_fmt0 = $extval( string, "PRIi8")
+    val PRI_sz = g1ofg0( length PRI_fmt0)
+    val PRI_fmt = believeme( PRI_fmt0, PRI_sz) where {
+      extern castfn believeme{n:nat}( i: string, sz: size_t(n)):<> [n > 0; n < 9] string(n)
+    }
+  }
+  var format_bs = create(length PRI_fmt_bs + 2) ++ $BS.pack '%' ++ PRI_fmt_bs
+  val (fmt_pf | fmt_p, fmt_sz) = bs2unused_bytes( format_bs)
+  val () = array_set_at_guint( !fmt_p, i2sz 0, $UN.cast{char} 0)
+  val () = unused_bytes_addback( fmt_pf | format_bs, i2sz 0)
+  val ( format_pf | format_p, _) = $BS.bs2bytes( format_bs)
+  var bs: BytestringNSH0?
+  val () = bs := $BS.create(i2sz 5) // -127 - min int8 value + NULL
+  val (pf | p, sz) = $BS.bs2unused_bytes( bs)
+  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 5, format_p, i))
+  prval () = $BS.bytes_addback( format_pf | format_bs)
+  val () = free format_bs
+in
+  ifcase
+  | rendered <= 0 => bs where {
+    val () = array_set_at_guint( !p, i2sz 0, '0')
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz 1)
+  }
+  | rendered > 5 => bs where {
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz 5)
+  }
+  | _ => bs where {
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz rendered)
+  }
+end
+
+implement pack_uint8(i) =
+let
+  val PRI_fmt_bs = pack PRI_fmt where {
+    macdef PRI_fmt0 = $extval( string, "PRIu8")
+    val PRI_sz = g1ofg0( length PRI_fmt0)
+    val PRI_fmt = believeme( PRI_fmt0, PRI_sz) where {
+      extern castfn believeme{n:nat}( i: string, sz: size_t(n)):<> [n > 0; n < 9] string(n)
+    }
+  }
+  var format_bs = create(length PRI_fmt_bs + 2) ++ $BS.pack '%' ++ PRI_fmt_bs
+  val (fmt_pf | fmt_p, fmt_sz) = bs2unused_bytes( format_bs)
+  val () = array_set_at_guint( !fmt_p, i2sz 0, $UN.cast{char} 0)
+  val () = unused_bytes_addback( fmt_pf | format_bs, i2sz 0)
+  val ( format_pf | format_p, _) = $BS.bs2bytes( format_bs)
+  var bs: BytestringNSH0?
+  val () = bs := $BS.create(i2sz 4) // 255 - max int8 value + NULL
+  val (pf | p, sz) = $BS.bs2unused_bytes( bs)
+  val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 4, format_p, i))
+  prval () = $BS.bytes_addback( format_pf | format_bs)
+  val () = free format_bs
+in
+  ifcase
+  | rendered <= 0 => bs where {
+    val () = array_set_at_guint( !p, i2sz 0, '0')
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz 1)
+  }
+  | rendered > 4 => bs where {
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz 4)
+  }
+  | _ => bs where {
+    val () = $BS.unused_bytes_addback( pf | bs, i2sz rendered)
+  }
+end
+
 implement pack_int16(i) =
 let
   val PRI_fmt_bs = pack PRI_fmt where {

@@ -144,6 +144,22 @@ fn
   Bytestring_vtype( len, 0, cap, ucap, 0, true, l)
 overload pack with pack_float
 
+fn
+  pack_int8
+  ( i: int8
+  ):<!wrt>
+  [len,cap:pos | cap >= len][ucap:nat][l:addr | l > null]
+  Bytestring_vtype( len, 0, cap, ucap, 0, true, l)
+overload pack with pack_int8
+
+fn
+  pack_uint8
+  ( i: uint8
+  ):<!wrt>
+  [len,cap:pos | cap >= len][ucap:nat][l:addr | l > null]
+  Bytestring_vtype( len, 0, cap, ucap, 0, true, l)
+overload pack with pack_uint8
+
 (* O(1) *)
 fn
   pack_int16
