@@ -80,6 +80,10 @@ fn
   ):<>
   Bytestring_vtype(0,0,0,0,0,false,null)
 
+(**
+ * Packing functions
+ *)
+
 (* O(1)
  *)
 fn
@@ -149,6 +153,7 @@ fn
   Bytestring_vtype( len, 0, cap, ucap, 0, true, l)
 overload pack with pack_float
 
+(* O(1) *)
 fn
   pack_int8
   ( i: int8
@@ -157,6 +162,7 @@ fn
   Bytestring_vtype( len, 0, cap, ucap, 0, true, l)
 overload pack with pack_int8
 
+(* O(1) *)
 fn
   pack_uint8
   ( i: uint8
@@ -477,23 +483,6 @@ fn
 
 (* O(1)
  *)
-(*
-  1. 
-  val a = create(100)
-  val b = a + pack "hello"
-  val c = b + pack " world"
-  2.
-  val a = create(100)
-  val b = a + pack "hello"
-  val c = take 2 b
-  val d = b + pack " world"
-  3.
-  val a = create(100)
-  val b = a + pack "hello"
-  val c = take 2 b
-  val d = b + pack " world"
-*)
-
 fn
   ref_bs_child
   { len, offset, cap, ucap, refcnt:nat}{dynamic:bool}{l:addr}
@@ -745,6 +734,7 @@ fn
   [odynamic: bool | ( l > null && odynamic == true) || odynamic == false]
   Bytestring_vtype( len, 0, len, 0, 0, odynamic, l1)
 
+(* O(len) *)
 fn
   parse_uint32
   {len,offset,cap,ucap,refcnt: nat}{dynamic:bool}{l:addr}
