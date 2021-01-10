@@ -604,9 +604,10 @@ fn
  *)
 fn
   bs2bytes
-  {len,offset,cap,ucap,refcnt: nat | cap > 0}{dynamic:bool}{l:addr}
+  {len,offset,cap,ucap,refcnt: nat | cap > 0}{dynamic:bool}{l:agz}
   ( i: !Bytestring_vtype(len,offset,cap,ucap,refcnt,dynamic,l) >> minus_vt( Bytestring_vtype(len,offset,cap,ucap,refcnt,dynamic,l), array_v(char, l+offset*sizeof(char), len))
   ):<>
+  [ l+offset*sizeof(char) > null]
   ( array_v(char, l+offset*sizeof(char), len)
   | ptr (l+offset*sizeof(char))
   , size_t(len)
@@ -741,3 +742,24 @@ fn
   ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
   ):<!wrt>
   Option_vt( uint32)
+
+(* create a copy of the given bytestring with reversed content
+*)
+(* O(len) *)
+fn
+  reverse
+  {len,offset,cap,ucap,refcnt: nat | len > 0}{dynamic:bool}{l:agz}
+  ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
+  ):<!wrt>
+  [l1:agz]
+  Bytestring_vtype( len, 0, len, 0, 0, true, l1)
+
+(* reverses the content of the string in-place
+*)
+(* O(len) *)
+fn
+  reverseC
+  {len,offset,cap,ucap,refcnt: nat}{dynamic:bool}{l:addr}
+  ( i: Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
+  ):<!wrt>
+  Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)

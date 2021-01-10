@@ -1189,3 +1189,33 @@ implement parse_uint32( i) = Some_vt( $UN.cast{uint32} v) where {
   val v = $extfcall(int, "atoi", p)
   prval _ = bytes_addback( pf | i)
 }
+
+implement reverse{len,offset,cap,ucap,refcnt}{dynamic}( i) = result where {
+  prval () = lemma_bytestring_param i
+  val i_sz = length i
+  var result: BytestringNSH0?
+  val () = result := create( i_sz)
+  val (r_pf | r_p, r_sz) = bs2unused_bytes( result)
+  val (i_pf | i_p, i_sz) = bs2bytes( i)
+  val () = loop( r_pf, i_pf | i2sz 0, r_p, i_p) where {
+    fun
+      loop
+      {n:nat | n <= len}{l,l1:agz}
+      .<len-n>.
+      ( dst_pf: !array_v(char, l1, len)
+      , src_pf: !array_v(char, l, len)
+      | i: size_t n
+      , dst: ptr l1
+      , src: ptr l
+      ):<!wrt>
+      void =
+    if i = i_sz
+    then ()
+    else loop( dst_pf, src_pf | i + i2sz 1, dst, src) where {
+      prval _ = prop_verify {n < len} ()
+      val () = array_set_at_guint( !dst, i, array_get_at_guint( !src, i_sz - i - 1))
+    }
+  }
+  val () = unused_bytes_addback( r_pf | result, i_sz)
+  prval () = bytes_addback( i_pf | i)
+}
