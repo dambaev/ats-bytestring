@@ -790,9 +790,7 @@ implement copy( i) =
 let
   prval () = lemma_bytestring_param( i)
 in
-  if capacity i = 0
-  then empty()
-  else result where {
+  result where {
     val ( i_pf | i_p, i_sz) = bs2bytes( i)
     val ( pf, fpf | p) = array_ptr_alloc<char>(i_sz)
     val () = memcpy( pf, i_pf | p, i_p, i_sz)
@@ -1212,10 +1210,36 @@ implement reverse{len,offset,cap,ucap,refcnt}{dynamic}( i) = result where {
     if i = i_sz
     then ()
     else loop( dst_pf, src_pf | i + i2sz 1, dst, src) where {
-      prval _ = prop_verify {n < len} ()
       val () = array_set_at_guint( !dst, i, array_get_at_guint( !src, i_sz - i - 1))
     }
   }
   val () = unused_bytes_addback( r_pf | result, i_sz)
+  prval () = bytes_addback( i_pf | i)
+}
+
+implement reverseC{len,offset,cap,ucap}{dynamic}( i) = i where {
+  prval () = lemma_bytestring_param i
+  val i_sz = length i
+  val half_i_sz = i_sz / (i2sz 2)
+  val (i_pf | i_p, i_sz) = bs2bytes( i)
+  val () = loop( i_pf | i2sz 0, i_p) where {
+    fun
+      loop
+      {n:nat | n <= len / 2}{l:agz}
+      .<len-n>.
+      ( dst_pf: !array_v(char, l, len)
+      | i: size_t n
+      , dst: ptr l
+      ):<!wrt>
+      void =
+    if i = half_i_sz
+    then ()
+    else loop( dst_pf | i + i2sz 1, dst) where {
+      val first = array_get_at_guint( !dst, i)
+      val second = array_get_at_guint( !dst, i_sz - i - 1)
+      val () = array_set_at_guint( !dst, i, second)
+      val () = array_set_at_guint( !dst, i_sz - i - 1, first)
+    }
+  }
   prval () = bytes_addback( i_pf | i)
 }

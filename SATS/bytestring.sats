@@ -728,12 +728,11 @@ fn
 (* O(len) *)
 fn
   copy
-  {len,offset,cap,ucap,refcnt: nat}{dynamic:bool}{l:addr}
+  {len,offset,cap,ucap,refcnt: nat | len > 0}{dynamic:bool}{l:agz}
   ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) 
   ):<!wrt>
-  [l1:addr | ( l > null && l1 > null) || l1 == null ]
-  [odynamic: bool | ( l > null && odynamic == true) || odynamic == false]
-  Bytestring_vtype( len, 0, len, 0, 0, odynamic, l1)
+  [l1:agz]
+  Bytestring_vtype( len, 0, len, 0, 0, true, l1)
 
 (* O(len) *)
 fn
@@ -744,6 +743,7 @@ fn
   Option_vt( uint32)
 
 (* create a copy of the given bytestring with reversed content
+  for usage, see test19
 *)
 (* O(len) *)
 fn
@@ -754,12 +754,13 @@ fn
   [l1:agz]
   Bytestring_vtype( len, 0, len, 0, 0, true, l1)
 
-(* reverses the content of the string in-place
+(* reverses the content of the string in-place. Requires the bytestring to be dynamically allocated, as writing to the statically allocated memory will cause a SEGFAULT
+  for usage, see test19
 *)
-(* O(len) *)
+(* O(len), theta(len / 2) *)
 fn
   reverseC
-  {len,offset,cap,ucap,refcnt: nat}{dynamic:bool}{l:addr}
-  ( i: Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
+  {len,offset,cap,ucap: nat | len  > 0}{l:agz}
+  ( i: Bytestring_vtype( len, offset, cap, ucap, 0, true, l)
   ):<!wrt>
-  Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
+  Bytestring_vtype( len, offset, cap, ucap, 0, true, l)
