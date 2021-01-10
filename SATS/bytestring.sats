@@ -66,7 +66,7 @@ prfun
   [ ( n > 0 && l > null)
   ; (cap > 0 && l > null)
   ; (l > null && n >= 0); n+offset <= cap
-  ; offset+n+ucap <= cap
+  ; offset+n+ucap == cap
   ; (ucap == cap - offset - n || ucap == 0)
   ] (* n should not exceed capacity *)
   void
