@@ -46,6 +46,7 @@ cleanall::
 
 
 test: \
+		test20 \
 		test19 \
 		test18 \
 		test1 \
@@ -120,6 +121,9 @@ test18: $(ATS_OBJS)
 	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/$@.dats $(ATSLIBS)
 	./$@
 test19: $(ATS_OBJS)
+	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/$@.dats $(ATSLIBS)
+	./$@
+test20: $(ATS_OBJS)
 	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/$@.dats $(ATSLIBS)
 	./$@
 cleanall:: ; $(RMF) test*
