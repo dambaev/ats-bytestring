@@ -18,7 +18,7 @@ fn
   var bs1: $BS.Bytestring0
   val () = bs1 := $BS.take( i2sz 11, bs)
   val () = assertloc( bs = bs1)
-  val () = $BS.decref_bs( bs, bs1) // consume bs and decref for bs1
+  val () = free( bs, bs1) // consume bs and decref for bs1
 }
 
 implement main0() = {

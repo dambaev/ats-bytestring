@@ -603,23 +603,6 @@ implement unused_bytes_addback{len,offset,cap,ucap,refcnt,used_bytes}{dynamic}{l
   val () = i := bs_build( pf | (len + used_bytes, offset, cap, dynamic, p))
 }
 
-implement decref_bs( consume, preserve) = {
-  extern castfn
-    explode
-    { len, offset, cap, ucap, refcnt:nat}{dynamic:bool}{l:addr}
-    ( i: Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
-    ):<>
-    ( ( size_t(len)
-      , size_t(offset)
-      , size_t(cap)
-      , bool(dynamic)
-      , ptr(l)
-      )
-    )
-  val _ = explode( consume)
-  prval () = bs_decref( preserve, 1)
-}
-
 implement growC(l, r) = vl where {
   prval () = lemma_bytestring_param( l)
   prval () = lemma_bytestring_param( r)

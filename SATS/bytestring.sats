@@ -126,6 +126,14 @@ fn
 
 overload pack with pack_chars_dynamic
 
+(* returns text representation of given value
+  example:
+  val v = $BS.pack 'h'
+  val v1 = $BS.pack "h"
+  val () = assertloc( v = v1)
+  val () = free v1
+  val () = free v
+*)
 (* O(1) *)
 fn
   pack_char
@@ -135,6 +143,14 @@ fn
   Bytestring_vtype( 1, 0, 1, 0, 0, true, l)
 overload pack with pack_char
 
+(* returns text representation of given value
+  example:
+  val v = $BS.pack 1234.456
+  val v1 = $BS.pack "1234.456"
+  val () = assertloc( v = v1)
+  val () = free v1
+  val () = free v
+*)
 (* O(1) *)
 fn
   pack_double
@@ -144,6 +160,14 @@ fn
   Bytestring_vtype( len, 0, cap, ucap, 0, true, l)
 overload pack with pack_double
 
+(* returns text representation of given value
+  example:
+  val v = $BS.pack( 1234.456f)
+  val v1 = $BS.pack "1234.456"
+  val () = assertloc( v = v1)
+  val () = free v1
+  val () = free v
+*)
 (* O(1) *)
 fn
   pack_float
@@ -153,6 +177,14 @@ fn
   Bytestring_vtype( len, 0, cap, ucap, 0, true, l)
 overload pack with pack_float
 
+(* returns text representation of given value
+  example:
+  val v = $BS.pack( $UN.cast{int8} 100)
+  val v1 = $BS.pack "100"
+  val () = assertloc( v = v1)
+  val () = free v1
+  val () = free v
+*)
 (* O(1) *)
 fn
   pack_int8
@@ -162,6 +194,14 @@ fn
   Bytestring_vtype( len, 0, cap, ucap, 0, true, l)
 overload pack with pack_int8
 
+(* returns text representation of given value
+  example:
+  val v = $BS.pack( $UN.cast{uint8} 100)
+  val v1 = $BS.pack "100"
+  val () = assertloc( v = v1)
+  val () = free v1
+  val () = free v
+*)
 (* O(1) *)
 fn
   pack_uint8
@@ -171,6 +211,14 @@ fn
   Bytestring_vtype( len, 0, cap, ucap, 0, true, l)
 overload pack with pack_uint8
 
+(* returns text representation of given value
+  example:
+  val v = $BS.pack( $UN.cast{int16} 1234)
+  val v1 = $BS.pack "1234"
+  val () = assertloc( v = v1)
+  val () = free v1
+  val () = free v
+*)
 (* O(1) *)
 fn
   pack_int16
@@ -180,6 +228,14 @@ fn
   Bytestring_vtype( len, 0, cap, ucap, 0, true, l)
 overload pack with pack_int16
 
+(* returns text representation of given value
+  example:
+  val v = $BS.pack( $UN.cast{uint16} 1234)
+  val v1 = $BS.pack "1234"
+  val () = assertloc( v = v1)
+  val () = free v1
+  val () = free v
+*)
 (* O(1) *)
 fn
   pack_uint16
@@ -189,6 +245,14 @@ fn
   Bytestring_vtype( len, 0, cap, ucap, 0, true, l)
 overload pack with pack_uint16
 
+(* returns text representation of given value
+  example:
+  val v = $BS.pack( $UN.cast{int32} 1234)
+  val v1 = $BS.pack "1234"
+  val () = assertloc( v = v1)
+  val () = free v1
+  val () = free v
+*)
 (* O(1) *)
 fn
   pack_int32
@@ -198,6 +262,14 @@ fn
   Bytestring_vtype( len, 0, cap, ucap, 0, true, l)
 overload pack with pack_int32
 
+(* returns text representation of given value
+  example:
+  val v = $BS.pack( $UN.cast{uint32} 1234)
+  val v1 = $BS.pack "1234"
+  val () = assertloc( v = v1)
+  val () = free v1
+  val () = free v
+*)
 (* O(1) *)
 fn
   pack_uint32
@@ -207,6 +279,14 @@ fn
   Bytestring_vtype( len, 0, cap, ucap, 0, true, l)
 overload pack with pack_uint32
 
+(* returns text representation of given value
+  example:
+  val v = $BS.pack( $UN.cast{uint64} 1234)
+  val v1 = $BS.pack "1234"
+  val () = assertloc( v = v1)
+  val () = free v1
+  val () = free v
+*)
 (* O(1) *)
 fn
   pack_uint64
@@ -216,6 +296,14 @@ fn
   Bytestring_vtype( len, 0, cap, ucap, 0, true, l)
 overload pack with pack_uint64
 
+(* returns text representation of given value
+  example:
+  val v = $BS.pack_int64( $UN.cast{int64} 1234)
+  val v1 = $BS.pack "1234"
+  val () = assertloc( v = v1)
+  val () = free v1
+  val () = free v
+*)
 (* O(1) *)
 fn
   pack_int64
@@ -273,20 +361,22 @@ fn
 
 overload free with free_static_array
 
+(* consumes bytestring 'consume' and decreases reference count of the 'preserve' bytestring
+*)
 (* O(1)
  *)
 fn
   unref_bs
-  {r_len, r_offset, r_cap, r_ucap: nat}{r_dynamic:bool}{l:addr}
-  {o_len, o_offset, o_cap, o_ucap: nat}{o_refcnt: nat | o_refcnt > 0}{o_dynamic:bool}{l:addr}
-  ( consume: Bytestring_vtype( r_len, r_offset, r_cap, r_ucap, 1, r_dynamic, l)
-  , preserve: !Bytestring_vtype( o_len, o_offset, o_cap, o_ucap, o_refcnt, o_dynamic, l) >> Bytestring_vtype( o_len, o_offset, o_cap, o_ucap, o_refcnt - 1, o_dynamic, l)
+  {c_len,c_offset,cap,c_ucap: nat}{dynamic:bool}{l:addr}
+  {p_len,p_offset,p_ucap,p_refcnt: nat | p_refcnt > 0}
+  ( consume: Bytestring_vtype( c_len, c_offset, cap, c_ucap, 1, dynamic, l)
+  , preserve: !Bytestring_vtype( p_len, p_offset, cap, p_ucap, p_refcnt, dynamic, l) >> Bytestring_vtype( p_len, p_offset, cap, p_ucap, p_refcnt - 1, dynamic, l)
   ):<!wrt>
   void
-  
-
 overload free with unref_bs
 
+(* returns true in case if given bytestring is statically allocated
+*)
 (* O(1)
  *)
 fn
@@ -295,7 +385,7 @@ fn
   ( i: !Bytestring_vtype(len,offset,cap,ucap,refcnt,dynamic,l)
   ):<> bool( dynamic == false)
 
-(* O(l_len + r_len)
+(* O(l_len), theta( 2 * l_len)
  *)
 fn
   eq_bytestring_bytestringC
@@ -308,7 +398,8 @@ fn
   [r: bool | (l_len == r_len && r ) || (l_len != r_len || r == false)]
   bool(r)
 
-(* O(l_len + r_len)
+(* returns true only if content if 'l' is the same as content of 'r'. Do not consumes anything *)
+(* O(l_len), theta( 2 * l_len)
  *)
 fn
   eq_bytestring_bytestring
@@ -321,7 +412,15 @@ fn
   [r: bool | (l_len == r_len && r ) || (l_len != r_len || r == false)]
   bool(r)
 
-(* O(l_len + r_len)
+(* returns true only if 'l' is not the same string (in terms of content) as 'r'. Consumes 'r'
+  example:
+  val s = $BS.pack "test"
+  val s1 = $BS.pack "test"
+  val v = s != s1
+  val () = free s
+  val () = free s1
+*)
+(* O(l_len), theta( 2 * l_len)
  *)
 fn
   neq_bytestring_bytestring
@@ -331,7 +430,13 @@ fn
   , r: !Bytestring_vtype( r_len, r_offset, r_cap, r_ucap, r_refcnt, r_dynamic, r_p)
   ):<> bool
 
-(* O(l_len + r_len)
+(* returns true only if 'l' is not the same string (in terms of content) as 'r'. Consumes 'r'
+  example:
+  val s = $BS.pack "test"
+  val v = s != $BS.pack "test"
+  val () = free s
+*)
+(* O(l_len), theta( 2 * l_len)
  *)
 fn
   neq_bytestring_bytestringC
@@ -344,6 +449,8 @@ fn
 (* O(l_len + r_len) 
   creates new bytestring with content of r appended to l. does not consumes l and r 
   this function is always creates new Bytestring
+  val s1 = $BS.pack "hello " + $BS.pack "world"
+  val () = free s1
 *)
 fn
   append_bs_bs
@@ -359,6 +466,11 @@ overload append with append_bs_bs
 (* O(l_len + r_len) 
   creates new bytestring with content of r appended to l. does not consumes l and r 
   this function is always creates new Bytestring
+  example:
+  val s = $BS.pack "hello "
+  val s1 = s !+ $BS.pack "world"
+  val () = free s1
+  val () = free s
 *)
 fn
   append_bs_bsC
@@ -372,8 +484,14 @@ fn
 overload append with append_bs_bsC
 
 (* O(l_len + r_len) 
-  creates new bytestring with content of r appended to l. does not consumes l and r 
+  creates new bytestring with content of r appended to l. does not consumes r. consumes l 
   this function is always creates new Bytestring
+  intended to be used as operator +!
+  example:
+  val s = $BS.pack "world"
+  val s1 = $BS.pack "hello " +! s
+  val () = free s1
+  val () = free s
 *)
 fn
   append_bsC_bs
@@ -388,6 +506,11 @@ overload append with append_bsC_bs
 
 (* O(n + 1)
    creates new Bytestring with appending given character into the end of it
+  example:
+  val s = $BS.pack "hello worl"
+  val s1 = s + 'd'
+  val () = free s1
+  val () = free s
 *)
 fn
   append_bs_char
@@ -400,7 +523,12 @@ fn
 overload append with append_bs_char
 
 (* O(n + 1)
-   creates new Bytestring with appending given character into the end of it
+   creates new Bytestring with appending given character into the head of it
+  example:
+  val s = $BS.pack "ello world"
+  val s1 = 'h' + s
+  val () = free s1
+  val () = free s
 *)
 fn
   append_char_bs
@@ -465,6 +593,7 @@ fn
   ):<!wrt>
   Bytestring_vtype( l_len+r_len, l_offset, l_cap, l_ucap - r_len, l_refcnt, l_dynamic, l_p)
 
+(* returns the capacity of the given bytestring *)
 (* O(1)
  *)
 fn
@@ -473,6 +602,7 @@ fn
   ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
   ):<> size_t( cap)
 
+(* returns the length of the given bytestring *)
 (* O(1)
  *)
 fn
@@ -481,6 +611,8 @@ fn
   ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
   ):<> size_t(len)
 
+(* returns new bytestring, which is a reference to bytestring 'i' moving unused capacity from the original into new bytestring
+*)
 (* O(1)
  *)
 fn
@@ -490,6 +622,8 @@ fn
   ):<!wrt>
   Bytestring_vtype( len, offset, cap, ucap, 1, dynamic, l)
 
+(* returns new bytestring, which is a reference to bytestring 'i' leaving unused capacity for original bytestring
+*)
 (* O(1)
  *)
 fn
@@ -500,6 +634,7 @@ fn
   Bytestring_vtype( len, offset, cap, 0, 1, dynamic, l)
 
 
+(* returns true only if given bytestring is empty *)
 (* O(1)
  *)
 fn
@@ -508,6 +643,7 @@ fn
   ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
   ):<> bool( len == 0)
 
+(* returns true only if given bytestring is not empty *)
 (* O(1)
  *)
 fn
@@ -647,19 +783,6 @@ fn
   ):<!wrt>
   void
 
-(* consumes bytestring 'consume' and decreases reference count of the 'preserve' bytestring
-*)
-(* O(1)
- *)
-fn
-  decref_bs
-  {c_len,c_offset,cap,c_ucap: nat}{dynamic:bool}{l:addr}
-  {p_len,p_offset,p_ucap,p_refcnt: nat | p_refcnt > 0}
-  ( consume: Bytestring_vtype( c_len, c_offset, cap, c_ucap, 1, dynamic, l)
-  , preserve: !Bytestring_vtype( p_len, p_offset, cap, p_ucap, p_refcnt, dynamic, l) >> Bytestring_vtype( p_len, p_offset, cap, p_ucap, p_refcnt - 1, dynamic, l)
-  ):<!wrt>
-  void
-  
 (* O(1) *)
 fn
   get_byte_at_uint
