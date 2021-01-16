@@ -1181,11 +1181,16 @@ in
   }
 end
 
-implement parse_uint32( i) = Some_vt( $UN.cast{uint32} v) where {
+implement parse_uint32( i) = result where {
   prval _ = lemma_bytestring_param(i)
   val (pf | p, sz) = bs2bytes( i)
   val v = $extfcall(int, "atoi", p)
   prval _ = bytes_addback( pf | i)
+  val result =
+    ( if v >= 0
+    then Some_vt( $UN.cast{uint32} v)
+    else None_vt()
+    ): Option_vt(uint32)
 }
 
 implement reverse{len,offset,cap,ucap,refcnt}{dynamic}( i) = result where {
