@@ -514,7 +514,7 @@ fn
   isnot_empty
   { len, offset, cap, ucap, refcnt:nat}{dynamic:bool}{l:addr}
   ( i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
-  ):<> bool( len > 0 && l > null)
+  ):<> bool( len > 0 && l > null && cap > 0)
 
 (* O(1)
  *)
@@ -604,7 +604,7 @@ fn
  *)
 fn
   bs2bytes
-  {len,offset,cap,ucap,refcnt: nat | cap > 0}{dynamic:bool}{l:agz}
+  {len,offset,cap,ucap,refcnt: nat | cap > 0; len > 0}{dynamic:bool}{l:agz}
   ( i: !Bytestring_vtype(len,offset,cap,ucap,refcnt,dynamic,l) >> minus_vt( Bytestring_vtype(len,offset,cap,ucap,refcnt,dynamic,l), array_v(char, l+offset*sizeof(char), len))
   ):<>
   [ l+offset*sizeof(char) > null]
@@ -617,7 +617,7 @@ fn
  *)
 praxi
   bytes_addback
-  {len,offset,cap,ucap,refcnt: nat | cap > 0}{dynamic:bool}{l:addr}
+  {len,offset,cap,ucap,refcnt: nat | cap > 0; len > 0}{dynamic:bool}{l:addr}
   ( array_v(char, l+offset*sizeof(char), len)
   | i: !minus_vt( Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l), array_v(char, l+offset*sizeof(char), len)) >> Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
   ):<>
@@ -738,7 +738,9 @@ fn
   [l1:agz]
   Bytestring_vtype( len, 0, len, 0, 0, true, l1)
 
-(* converts string to an uint32 *)
+(* converts string to an uint32
+   see test21 for usage reference
+ *)
 (* O(len) *)
 fn
   parse_uint32
