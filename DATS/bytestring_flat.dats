@@ -720,30 +720,6 @@ implement get_byte_at_int( i, n) = res where {
 }
 
 
-implement {env}take_while(env, f, i) = result where {
-  fun
-    loop
-    {len, offset, cap, ucap, refcnt, n: nat | n <= len}{dynamic:bool}{l:addr}
-    .<len - n>.
-    ( i: size_t n
-    , sz: size_t len
-    , s: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
-    , env: !env
-    ):<!wrt>
-    [on: nat | on <=len]
-    size_t(on) =
-  if i = sz
-  then i where {
-    prval () = prop_verify {len == n}()
-  }
-  else
-    if not (f( env, s[i]))
-    then i
-    else loop( i + i2sz 1, sz, s, env)
-  val idx = loop( i2sz 0, length i, i, env)
-  val result = take( idx, i)
-}
-
 implement split_on( delim, i) = result where {
   fun
     loop
