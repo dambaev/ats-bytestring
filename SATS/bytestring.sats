@@ -713,20 +713,22 @@ fn
   #[cnt:nat]
   list_vt( [olen, ooffset:nat] Bytestring_vtype( olen, ooffset, cap, 0, 1, dynamic, l), cnt)
 
-(* returns a reference to a bytestring, which content satisfies the condition 'f' *)
+(* returns a reference to a bytestring, which content satisfies the condition 'f'
+   See test20 for usage examples
+*)
 (* O(olen) *)
 fn
   {env:viewt0ype}
   take_while
   {len, offset, cap, ucap, refcnt: nat}{dynamic:bool}{l:addr}
-  ( env: !env >> _
+  ( env: !env
   , f: (!env, char)-<> bool
   , i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, ucap, refcnt + 1, dynamic, l)
   ):<!wrt>
   [olen: nat]
   Bytestring_vtype( olen, offset, cap, 0, 1, dynamic, l)
  
-(* makes a new dynamically allocated copy of the given string *)
+(* makes a new dynamically allocated copy of the given non-empty string *)
 (* O(len) *)
 fn
   copy
