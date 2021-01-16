@@ -1159,14 +1159,25 @@ end
 
 implement parse_uint32( i) = result where {
   prval _ = lemma_bytestring_param(i)
-  val (pf | p, sz) = bs2bytes( i)
-  val v = $extfcall(int, "atoi", p)
-  prval _ = bytes_addback( pf | i)
+  val env = 0
+  val digits = take_while<int>( env, lam(env,ch)=<fun> isdigit( ch), i)
   val result =
-    ( if v >= 0
-    then Some_vt( $UN.cast{uint32} v)
-    else None_vt()
-    ): Option_vt(uint32)
+    ( if isnot_empty digits
+    then result where {
+      val (pf | p, sz) = bs2bytes( digits)
+      val v = $extfcall(uint32, "atol", p)
+      prval _ = bytes_addback( pf | digits)
+      val () = free( digits, i)
+      val result =
+        ( if v >= $UN.cast{uint32} 0
+        then Some_vt( $UN.cast{uint32} v)
+        else None_vt()
+        ): Option_vt(uint32)
+    }
+    else None_vt() where {
+      val () = free( digits, i)
+    }
+    ): Option_vt( uint32)
 }
 
 implement reverse{len,offset,cap,ucap,refcnt}{dynamic}( i) = result where {
