@@ -527,12 +527,14 @@ fn
   [l:agz]
   Bytestring_vtype(0, 0, cap, cap, 0, true, l)
 
+(* returnes substring, which is reference to 'i', containing [0;n] bytes
+  see test14 for usage reference
+*)
 (* O(1)
  *)
 fn
   take
-  {n:nat}
-  {len, offset, cap, ucap, refcnt: nat | len >= n}{dynamic:bool}{l:addr}
+  {n, len, offset, cap, ucap, refcnt: nat | len >= n}{dynamic:bool}{l:addr}
   ( n: size_t n
   , i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, ucap, refcnt + 1, dynamic, l)
   ):<!wrt>
@@ -645,17 +647,8 @@ fn
   ):<!wrt>
   void
 
-(* O(1)
- *)
-fn
-  take1
-  {len,offset,cap,ucap,refcnt,n: nat}{dynamic:bool}{l:addr}
-  ( n: size_t n
-  , i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype(len, offset, cap, ucap, refcnt + 1, dynamic, l)
-  ):<!wrt>
-  [newlen: nat | (n >= len && newlen == len) || (n < len && newlen == n)]
-  Bytestring_vtype( newlen, offset, cap, 0, 1, dynamic, l)
-
+(* consumes bytestring 'consume' and decreases reference count of the 'preserve' bytestring
+*)
 (* O(1)
  *)
 fn
@@ -685,6 +678,9 @@ fn
   ):<>
   char
 
+(* returns character, located at offset 'n'
+   see test15 for usage
+*)
 (* O(1) *)
 fn
   get_char_at_uint
@@ -694,6 +690,9 @@ fn
   ):<>
   char
 
+(* returns character, located at offset 'n'
+   see test15 for usage
+*)
 (* O(1) *)
 fn
   get_char_at_int
@@ -703,6 +702,9 @@ fn
   ):<>
   char
 
+(* returns a list of substrings (which are references to input), splitted by delimeter, not including it
+  see test16 for usage
+*)
 (* O(1) *)
 fn
   split_on

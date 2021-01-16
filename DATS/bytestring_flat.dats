@@ -603,29 +603,6 @@ implement unused_bytes_addback{len,offset,cap,ucap,refcnt,used_bytes}{dynamic}{l
   val () = i := bs_build( pf | (len + used_bytes, offset, cap, dynamic, p))
 }
 
-implement take1{len,offset,cap,ucap,refcnt,n}{dynamic}{l}(n, i) =
-let
-  extern castfn
-    build
-    {newlen,newoffset: nat}
-    ( void
-    | ( size_t(newlen)
-      , size_t(newoffset)
-      , size_t(cap)
-      , bool(dynamic)
-      , ptr(l)
-      )
-    ):<> Bytestring_vtype( newlen, newoffset, cap, 0, 1, dynamic, l)
-  val ( rpf | impl) = bs_takeout_struct( i)
-  val (len, offset,cap, dynamic, p) = impl
-  prval () = bs_takeback_struct( rpf | i)
-  prval () = bs_incref( i, 1)
-in
-   if n >= len
-   then build( () | (len, offset, cap, dynamic, p))
-   else build( () | (n, offset, cap, dynamic, p))
-end
-
 implement decref_bs( consume, preserve) = {
   extern castfn
     explode
