@@ -723,8 +723,8 @@ fn
   , f: (!env, char)-<> bool
   , i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, ucap, refcnt + 1, dynamic, l)
   ):<!wrt>
-  [olen, ooffset: nat]
-  Bytestring_vtype( olen, ooffset, cap, 0, 1, dynamic, l)
+  [olen: nat]
+  Bytestring_vtype( olen, offset, cap, 0, 1, dynamic, l)
  
 (* makes a new dynamically allocated copy of the given string *)
 (* O(len) *)
