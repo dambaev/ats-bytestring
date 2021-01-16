@@ -713,6 +713,7 @@ fn
   #[cnt:nat]
   list_vt( [olen, ooffset:nat] Bytestring_vtype( olen, ooffset, cap, 0, 1, dynamic, l), cnt)
 
+(* returns a reference to a bytestring, which content satisfies the condition 'f' *)
 (* O(olen) *)
 fn
   {env:viewt0ype}
@@ -725,6 +726,7 @@ fn
   [olen, ooffset: nat]
   Bytestring_vtype( olen, ooffset, cap, 0, 1, dynamic, l)
  
+(* makes a new dynamically allocated copy of the given string *)
 (* O(len) *)
 fn
   copy
@@ -734,6 +736,7 @@ fn
   [l1:agz]
   Bytestring_vtype( len, 0, len, 0, 0, true, l1)
 
+(* converts string to an uint32 *)
 (* O(len) *)
 fn
   parse_uint32
