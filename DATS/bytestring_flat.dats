@@ -1235,3 +1235,24 @@ implement is_infix_of( p, s) = result where {
   end
   val result = loop( length s - length p, p, s)
 }
+
+implement elem( ch, s) = loop( length s, s) where {
+  fun
+    loop
+    {len,offset,cap,ucap, refcnt:nat}{dynamic:bool}{l:addr}
+    {n:nat | n <= len}
+    .<n>.
+    ( i: size_t n
+    , s: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
+    ):<!wrt>
+    [r:bool]
+    bool(r) =
+  if i = i2sz 0
+  then false
+  else
+    if s[ i - i2sz 1] = ch
+    then true
+    else loop( i - i2sz 1, s)
+}
+
+implement not_elem( ch, s) = not( elem( ch, s))

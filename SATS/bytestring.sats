@@ -947,3 +947,25 @@ fn
   ):<!wrt>
   [r: bool]
   bool(r)
+
+(* returns true if 'ch' is member of 's' *)
+(* O(len) *)
+fn
+  elem
+  {len,offset,cap,ucap,refcnt: nat}{dynamic:bool}{l:addr}
+  ( ch: char
+  , s: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
+  ):<!wrt>
+  [r:bool]
+  bool(r)
+
+(* returns true if 'ch' is not a member of 's' *)
+(* O(len) *)
+fn
+  not_elem
+  {len,offset,cap,ucap,refcnt: nat}{dynamic:bool}{l:addr}
+  ( ch: char
+  , s: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
+  ):<!wrt>
+  [r:bool]
+  bool(r)
