@@ -695,9 +695,9 @@ fn
   {n:nat}
   {len, offset, cap, ucap, refcnt: nat | len >= n}{dynamic:bool}{l:addr}
   ( n: size_t n
-  , i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, 0, refcnt + 1, dynamic, l)
+  , i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, ucap, refcnt + 1, dynamic, l)
   ):<!wrt>
-  Bytestring_vtype( len - n, offset + n, cap, ucap, 1, dynamic, l)
+  Bytestring_vtype( len - n, offset + n, cap, 0, 1, dynamic, l)
   
 (* O(1)
  *)
@@ -853,6 +853,21 @@ fn
   [olen: nat]
   Bytestring_vtype( olen, offset, cap, 0, 1, dynamic, l)
  
+(* returns bytestring with content, that starts at a first character, that does not
+   satisfies predicate 'f'
+*)
+(* O(len), theta(olen)*)
+fn
+  {env:viewt0ype}
+  drop_while
+  {len, offset, cap, ucap, refcnt: nat}{dynamic:bool}{l:addr}
+  ( env: !env
+  , f: (!env, char)-<> bool
+  , i: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l) >> Bytestring_vtype( len, offset, cap, ucap, refcnt + 1, dynamic, l)
+  ):<!wrt>
+  [olen: nat | olen <= len]
+  Bytestring_vtype( olen, offset + (len - olen), cap, 0, 1, dynamic, l)
+
 (* makes a new dynamically allocated copy of the given non-empty string *)
 (* O(len) *)
 fn

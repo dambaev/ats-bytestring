@@ -470,7 +470,7 @@ implement neq_bytestring_bytestringC(l, r) = not( eq_bytestring_bytestringC( l, 
   
 implement drop(n, i) =
 let
-  val res = ref_bs_child i
+  val res = ref_bs_parent i
   val (rpf | impl) = bs_explode( res)
   val (len, offset, cap, dynamic, p) = impl
 in
