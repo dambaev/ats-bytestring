@@ -77,4 +77,5 @@ implement main0() = {
   val () = test4()
   val () = test5()
   val () = test6()
+  val () = test7()
 }
