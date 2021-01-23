@@ -911,3 +911,39 @@ fn
   ( i: Bytestring_vtype( len, offset, cap, ucap, 0, true, l)
   ):<!wrt>
   Bytestring_vtype( len, offset, cap, ucap, 0, true, l)
+
+(* returns true iff 'p' is a suffix of 's' *)
+(* O(p_len) *)
+fn
+  is_suffix_of
+  {len,offset,cap,ucap,refcnt: nat | len > 0}{dynamic:bool}{l:agz}
+  {p_len, p_offset, p_cap, p_ucap, p_refcnt: nat | p_len > 0; p_len <= len}{p_dynamic:bool}{p_l:agz}
+  ( p: !Bytestring_vtype( p_len, p_offset, p_cap, p_ucap, p_refcnt, p_dynamic, p_l)
+  , s: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
+  ):<!wrt>
+  [r: bool]
+  bool(r)
+
+(* returns true iff 'p' is a substring of 's' *)
+(* O(len) *)
+fn
+  is_infix_of
+  {len,offset,cap,ucap,refcnt: nat | len > 0}{dynamic:bool}{l:agz}
+  {p_len, p_offset, p_cap, p_ucap, p_refcnt: nat | p_len > 0; p_len <= len}{p_dynamic:bool}{p_l:agz}
+  ( p: !Bytestring_vtype( p_len, p_offset, p_cap, p_ucap, p_refcnt, p_dynamic, p_l)
+  , s: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
+  ):<!wrt>
+  [r: bool]
+  bool(r)
+
+(* returns true iff 'p' is a prefix of 's' *)
+(* O(p_len) *)
+fn
+  is_prefix_of
+  {len,offset,cap,ucap,refcnt: nat | len > 0}{dynamic:bool}{l:agz}
+  {p_len, p_offset, p_cap, p_ucap, p_refcnt: nat | p_len > 0; p_len <= len}{p_dynamic:bool}{p_l:agz}
+  ( p: !Bytestring_vtype( p_len, p_offset, p_cap, p_ucap, p_refcnt, p_dynamic, p_l)
+  , s: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
+  ):<!wrt>
+  [r: bool]
+  bool(r)

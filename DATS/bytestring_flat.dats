@@ -1195,3 +1195,43 @@ implement reverseC{len,offset,cap,ucap}{dynamic}( i) = i where {
   }
   prval () = bytes_addback( i_pf | i)
 }
+
+
+implement is_suffix_of( p, s) = result where {
+  val s1 = drop( length s - length p, s)
+  val result = p = s1
+  val () = free( s1, s)
+}
+
+implement is_prefix_of( p, s) = result where {
+  val s1 = take( length p, s)
+  val result = p = s1
+  val () = free( s1, s)
+}
+implement is_infix_of( p, s) = result where {
+  fun
+    loop
+    {len,offset,cap,ucap,refcnt: nat | len > 0}{dynamic:bool}{l:agz}
+    {p_len, p_offset, p_cap, p_ucap, p_refcnt: nat | p_len > 0; p_len <= len}{p_dynamic:bool}{p_l:agz}
+    {n:nat | n <= len - p_len}
+    .<n>.
+    ( i: size_t n
+    , p: !Bytestring_vtype( p_len, p_offset, p_cap, p_ucap, p_refcnt, p_dynamic, p_l)
+    , s: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
+    ):<!wrt> [r:bool] bool(r) =
+  if i = i2sz 0
+  then is_prefix_of( p, s)
+  else
+  let
+    val s1 = drop( i, s)
+    val s2 = take( length p, s1)
+    val result = s2 = p
+    val () = free( s2, s1)
+    val () = free( s1, s)
+  in
+    if result
+    then result
+    else loop( i - i2sz 1, p, s)
+  end
+  val result = loop( length s - length p, p, s)
+}
