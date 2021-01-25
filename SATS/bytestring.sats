@@ -969,3 +969,30 @@ fn
   ):<!wrt>
   [r:bool]
   bool(r)
+
+(* in case if 'ch' present in s, returns it's index, starting from 0
+   see test25 for usage
+ *)
+(* unboxed version *)
+(* O(len) *)
+fn
+  find_index0
+  {len,offset,cap,ucap,refcnt: nat}{dynamic:bool}{l:addr}
+  ( ch: char
+  , result: &(size_t)? >> opt( [r:nat | r < len] size_t(r), f )
+  , s: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
+  ):<!wrt>
+  #[f:bool]
+  bool(f)
+(* in case if 'ch' present in s, returns it's index, starting from 0
+   see test25 for usage
+ *)
+(* boxed version, implemented on top of find_index0 *)
+(* O(len) *)
+fn
+  find_index1
+  {len,offset,cap,ucap,refcnt: nat}{dynamic:bool}{l:addr}
+  ( ch: char
+  , s: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
+  ):<!wrt>
+  Option_vt( [r: nat | r < len] size_t r)

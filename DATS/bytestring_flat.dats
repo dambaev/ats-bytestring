@@ -1256,3 +1256,51 @@ implement elem( ch, s) = loop( length s, s) where {
 }
 
 implement not_elem( ch, s) = not( elem( ch, s))
+
+implement find_index0{len,offset,cap,ucap,refcnt}{dynamic}{l}( ch, result, s) =
+let
+  val s_sz = length s
+  fun
+    loop
+    {n: nat | n <= len}
+    .<len - n>.
+    ( i: size_t n
+    , s: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)
+    ):<!wrt>
+    [m:nat | m <= len]
+    size_t(m) =
+  if i = s_sz
+  then i
+  else
+  let
+    prval () = prop_verify{ n < len}()
+  in
+    if s[i] = ch
+    then i
+    else loop( i + i2sz 1, s)
+  end
+  val res = loop( i2sz 0, s)
+in
+  if res < s_sz
+  then true where {
+    val () = result := res
+    prval () = opt_some( result)
+  }
+  else false where {
+    extern praxi believeme( pf: &size_t? >> ([r:nat | r < len] size_t)): void
+    prval () = believeme( result)
+    prval () = opt_none( result)
+  }
+end
+implement find_index1{len,offset,cap,ucap,refcnt}{dynamic}{l}( ch, s) =
+let
+  var idx: size_t?
+in
+  if find_index0( ch, idx, s)
+  then Some_vt( idx) where {
+    prval () = opt_unsome( idx)
+  }
+  else None_vt() where {
+    prval () = opt_unnone( idx)
+  }
+end
