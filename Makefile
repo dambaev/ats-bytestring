@@ -73,79 +73,103 @@ test: \
 		test17
 
 test1: $(ATS_OBJS)
-	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/test1.dats $(ATSLIBS)
-	./$@
+	$(ATSCC) $(ATSCCFLAGS) -o $@_bin $(ATS_OBJS) TEST/test1.dats $(ATSLIBS)
+	./$@_bin
+	@touch $@
 test2: $(ATS_OBJS)
-	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/test2.dats $(ATSLIBS)
-	./$@
+	$(ATSCC) $(ATSCCFLAGS) -o $@_bin $(ATS_OBJS) TEST/test2.dats $(ATSLIBS)
+	./$@_bin
+	@touch $@
 test3: $(ATS_OBJS)
-	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/test3.dats $(ATSLIBS)
-	./$@
+	$(ATSCC) $(ATSCCFLAGS) -o $@_bin $(ATS_OBJS) TEST/test3.dats $(ATSLIBS)
+	./$@_bin
+	@touch $@
 test4: $(ATS_OBJS)
-	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/test4.dats $(ATSLIBS)
-	./$@
+	$(ATSCC) $(ATSCCFLAGS) -o $@_bin $(ATS_OBJS) TEST/test4.dats $(ATSLIBS)
+	./$@_bin
+	@touch $@
 test5: $(ATS_OBJS)
-	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/test5.dats $(ATSLIBS)
-	./$@
+	$(ATSCC) $(ATSCCFLAGS) -o $@_bin $(ATS_OBJS) TEST/test5.dats $(ATSLIBS)
+	./$@_bin
+	@touch $@
 test6: $(ATS_OBJS)
-	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/test6.dats $(ATSLIBS)
-	./$@
+	$(ATSCC) $(ATSCCFLAGS) -o $@_bin $(ATS_OBJS) TEST/test6.dats $(ATSLIBS)
+	./$@_bin
+	@touch $@
 test7: $(ATS_OBJS)
-	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/test7.dats $(ATSLIBS)
-	./$@
+	$(ATSCC) $(ATSCCFLAGS) -o $@_bin $(ATS_OBJS) TEST/test7.dats $(ATSLIBS)
+	./$@_bin
+	@touch $@
 test8: $(ATS_OBJS)
-	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/test8.dats $(ATSLIBS)
-	./$@
+	$(ATSCC) $(ATSCCFLAGS) -o $@_bin $(ATS_OBJS) TEST/test8.dats $(ATSLIBS)
+	./$@_bin
+	@touch $@
 test9: $(ATS_OBJS)
-	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/test9.dats $(ATSLIBS)
-	./$@
+	$(ATSCC) $(ATSCCFLAGS) -o $@_bin $(ATS_OBJS) TEST/test9.dats $(ATSLIBS)
+	./$@_bin
+	@touch $@
 test10: $(ATS_OBJS)
-	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/test10.dats $(ATSLIBS) && exit 1 || touch test10
+	$(ATSCC) $(ATSCCFLAGS) -o $@_bin $(ATS_OBJS) TEST/test10.dats $(ATSLIBS) && exit 1 || touch test10
 test11: $(ATS_OBJS)
-	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/test11.dats $(ATSLIBS)
-	./$@
+	$(ATSCC) $(ATSCCFLAGS) -o $@_bin $(ATS_OBJS) TEST/test11.dats $(ATSLIBS)
+	./$@_bin
+	@touch $@
 test12: $(ATS_OBJS)
-	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/test12.dats $(ATSLIBS)
-	./$@
+	$(ATSCC) $(ATSCCFLAGS) -o $@_bin $(ATS_OBJS) TEST/test12.dats $(ATSLIBS)
+	./$@_bin
+	@touch $@
 test13: $(ATS_OBJS)
-	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/test13.dats $(ATSLIBS)
-	./$@
+	$(ATSCC) $(ATSCCFLAGS) -o $@_bin $(ATS_OBJS) TEST/test13.dats $(ATSLIBS)
+	./$@_bin
+	@touch $@
 test14: $(ATS_OBJS)
-	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/test14.dats $(ATSLIBS)
-	./$@
+	$(ATSCC) $(ATSCCFLAGS) -o $@_bin $(ATS_OBJS) TEST/test14.dats $(ATSLIBS)
+	./$@_bin
+	@touch $@
 test15: $(ATS_OBJS)
-	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/test15.dats $(ATSLIBS)
-	./$@
+	$(ATSCC) $(ATSCCFLAGS) -o $@_bin $(ATS_OBJS) TEST/test15.dats $(ATSLIBS)
+	./$@_bin
+	@touch $@
 test16: $(ATS_OBJS)
-	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/test16.dats $(ATSLIBS)
-	./$@
+	$(ATSCC) $(ATSCCFLAGS) -o $@_bin $(ATS_OBJS) TEST/test16.dats $(ATSLIBS)
+	./$@_bin
+	@touch $@
 test17: $(ATS_OBJS)
-	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/test17.dats $(ATSLIBS)
-	./$@
+	$(ATSCC) $(ATSCCFLAGS) -o $@_bin $(ATS_OBJS) TEST/test17.dats $(ATSLIBS)
+	./$@_bin
+	@touch $@
 test18: $(ATS_OBJS)
-	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/$@.dats $(ATSLIBS)
-	./$@
+	$(ATSCC) $(ATSCCFLAGS) -o $@_bin $(ATS_OBJS) TEST/$@.dats $(ATSLIBS)
+	./$@_bin
+	@touch $@
 test19: $(ATS_OBJS)
-	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/$@.dats $(ATSLIBS)
-	./$@
+	$(ATSCC) $(ATSCCFLAGS) -o $@_bin $(ATS_OBJS) TEST/$@.dats $(ATSLIBS)
+	./$@_bin
+	@touch $@
 test20: $(ATS_OBJS)
-	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/$@.dats $(ATSLIBS)
-	./$@
+	$(ATSCC) $(ATSCCFLAGS) -o $@_bin $(ATS_OBJS) TEST/$@.dats $(ATSLIBS)
+	./$@_bin
+	@touch $@
 test21: $(ATS_OBJS)
-	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/$@.dats $(ATSLIBS)
-	./$@
+	$(ATSCC) $(ATSCCFLAGS) -o $@_bin $(ATS_OBJS) TEST/$@.dats $(ATSLIBS)
+	./$@_bin
+	@touch $@
 test22: $(ATS_OBJS)
-	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/$@.dats $(ATSLIBS)
-	./$@
+	$(ATSCC) $(ATSCCFLAGS) -o $@_bin $(ATS_OBJS) TEST/$@.dats $(ATSLIBS)
+	./$@_bin
+	@touch $@
 test23: $(ATS_OBJS)
-	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/$@.dats $(ATSLIBS)
-	./$@
+	$(ATSCC) $(ATSCCFLAGS) -o $@_bin $(ATS_OBJS) TEST/$@.dats $(ATSLIBS)
+	./$@_bin
+	@touch $@
 test24: $(ATS_OBJS)
-	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/$@.dats $(ATSLIBS)
-	./$@
+	$(ATSCC) $(ATSCCFLAGS) -o $@_bin $(ATS_OBJS) TEST/$@.dats $(ATSLIBS)
+	./$@_bin
+	@touch $@
 test25: $(ATS_OBJS)
-	$(ATSCC) $(ATSCCFLAGS) -o $@ $(ATS_OBJS) TEST/$@.dats $(ATSLIBS)
-	./$@
+	$(ATSCC) $(ATSCCFLAGS) -o $@_bin $(ATS_OBJS) TEST/$@.dats $(ATSLIBS)
+	./$@_bin
+	@touch $@
 cleanall:: ; $(RMF) test*
 #
 ######
