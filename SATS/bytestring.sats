@@ -976,7 +976,7 @@ fn
 (* unboxed version *)
 (* O(len) *)
 fn
-  find_index0
+  elem_index0
   {len,offset,cap,ucap,refcnt: nat}{dynamic:bool}{l:addr}
   ( ch: char
   , result: &(size_t)? >> opt( [r:nat | r < len] size_t(r), f )
@@ -990,7 +990,7 @@ fn
 (* boxed version, implemented on top of find_index0 *)
 (* O(len) *)
 fn
-  find_index1
+  elem_index1
   {len,offset,cap,ucap,refcnt: nat}{dynamic:bool}{l:addr}
   ( ch: char
   , s: !Bytestring_vtype( len, offset, cap, ucap, refcnt, dynamic, l)

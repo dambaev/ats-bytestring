@@ -1257,7 +1257,7 @@ implement elem( ch, s) = loop( length s, s) where {
 
 implement not_elem( ch, s) = not( elem( ch, s))
 
-implement find_index0{len,offset,cap,ucap,refcnt}{dynamic}{l}( ch, result, s) =
+implement elem_index0{len,offset,cap,ucap,refcnt}{dynamic}{l}( ch, result, s) =
 let
   val s_sz = length s
   fun
@@ -1292,11 +1292,11 @@ in
     prval () = opt_none( result)
   }
 end
-implement find_index1{len,offset,cap,ucap,refcnt}{dynamic}{l}( ch, s) =
+implement elem_index1{len,offset,cap,ucap,refcnt}{dynamic}{l}( ch, s) =
 let
   var idx: size_t?
 in
-  if find_index0( ch, idx, s)
+  if elem_index0( ch, idx, s)
   then Some_vt( idx) where {
     prval () = opt_unsome( idx)
   }
