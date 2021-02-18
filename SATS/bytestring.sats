@@ -593,6 +593,20 @@ fn
   ):<!wrt>
   Bytestring_vtype( l_len+r_len, l_offset, l_cap, l_ucap - r_len, l_refcnt, l_dynamic, l_p)
 
+(* O(r_len)
+ this function appends 'r' at the end of 'l''s unused buffer.
+ See test17 for example of usage.\
+ this usage does not perform allocation and does not consumes 'r'.
+ *)
+fn
+  grow_bsC_bs
+  {r_len, r_offset, r_cap, r_ucap, l_refcnt: nat | r_len > 0}{r_dynamic:bool}{r_p:agz}
+  {l_len, l_offset, l_cap, l_ucap: nat | l_ucap >= r_len }{l_dynamic:bool}{l_p:agz}
+  ( l: Bytestring_vtype(l_len, l_offset, l_cap, l_ucap, l_refcnt, l_dynamic, l_p)
+  , r: !Bytestring_vtype(r_len, r_offset, r_cap, r_ucap, 0, r_dynamic, r_p)
+  ):<!wrt>
+  Bytestring_vtype( l_len+r_len, l_offset, l_cap, l_ucap - r_len, l_refcnt, l_dynamic, l_p)
+
 (* returns the capacity of the given bytestring *)
 (* O(1)
  *)

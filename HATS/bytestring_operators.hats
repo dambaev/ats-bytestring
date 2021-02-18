@@ -13,6 +13,9 @@ overload + with $BS.appendC
 infixl (+) ++
 overload ++ with $BS.growC
 
+infixl (+) ++!
+overload ++! with $BS.grow_bsC_bs
+
 infixl (+) +!
 overload +! with $BS.append_bsC_bs
 

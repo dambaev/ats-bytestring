@@ -46,6 +46,7 @@ cleanall::
 
 
 test: \
+		test26 \
 		test25 \
 		test24 \
 		test23 \
@@ -167,6 +168,10 @@ test24: $(ATS_OBJS)
 	./$@_bin
 	@touch $@
 test25: $(ATS_OBJS)
+	$(ATSCC) $(ATSCCFLAGS) -o $@_bin $(ATS_OBJS) TEST/$@.dats $(ATSLIBS)
+	./$@_bin
+	@touch $@
+test26: $(ATS_OBJS)
 	$(ATSCC) $(ATSCCFLAGS) -o $@_bin $(ATS_OBJS) TEST/$@.dats $(ATSLIBS)
 	./$@_bin
 	@touch $@

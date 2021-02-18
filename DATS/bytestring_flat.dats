@@ -620,6 +620,21 @@ implement growC(l, r) = vl where {
   val () = free r
 }
 
+implement grow_bsC_bs(l, r) = vl where {
+  prval () = lemma_bytestring_param( l)
+  prval () = lemma_bytestring_param( r)
+  var vl: Bytestring0?
+  val () = vl := l
+  val ( l_pf | l_ptr, l_sz) = bs2unused_bytes( vl)
+  val ( r_pf | r_ptr, r_len) = bs2bytes( r)
+
+  val () = memcpy( l_pf, r_pf | l_ptr, r_ptr, r_len) (* now actually copy memory *)
+
+  (* and bring back the proofs *)
+  prval () = bytes_addback( r_pf | r)
+  val () = unused_bytes_addback( l_pf | vl, r_len)
+}
+
 implement get_char_at_uint( i, n) = res where {
   prval () = lemma_bytestring_param( i)
   val (rpf | impl) = bs_takeout_struct( i)
