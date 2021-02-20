@@ -587,11 +587,11 @@ overload appendC with appendC_char_bs
 fn
   growC 
   {r_len, r_offset, r_cap, r_ucap, l_refcnt: nat | r_len > 0}{r_dynamic:bool}{r_p:agz}
-  {l_len, l_offset, l_cap, l_ucap: nat | l_ucap >= r_len }{l_dynamic:bool}{l_p:agz}
-  ( l: Bytestring_vtype(l_len, l_offset, l_cap, l_ucap, l_refcnt, l_dynamic, l_p)
+  {l_len, l_offset, l_cap, l_ucap: nat | l_ucap >= r_len }{l_p:agz}
+  ( l: Bytestring_vtype(l_len, l_offset, l_cap, l_ucap, l_refcnt, true, l_p)
   , r: Bytestring_vtype(r_len, r_offset, r_cap, r_ucap, 0, r_dynamic, r_p)
   ):<!wrt>
-  Bytestring_vtype( l_len+r_len, l_offset, l_cap, l_ucap - r_len, l_refcnt, l_dynamic, l_p)
+  Bytestring_vtype( l_len+r_len, l_offset, l_cap, l_ucap - r_len, l_refcnt, true, l_p)
 
 (* O(r_len)
  this function appends 'r' at the end of 'l''s unused buffer.
@@ -601,11 +601,11 @@ fn
 fn
   grow_bsC_bs
   {r_len, r_offset, r_cap, r_ucap, l_refcnt: nat | r_len > 0}{r_dynamic:bool}{r_p:agz}
-  {l_len, l_offset, l_cap, l_ucap: nat | l_ucap >= r_len }{l_dynamic:bool}{l_p:agz}
-  ( l: Bytestring_vtype(l_len, l_offset, l_cap, l_ucap, l_refcnt, l_dynamic, l_p)
+  {l_len, l_offset, l_cap, l_ucap: nat | l_ucap >= r_len }{l_p:agz}
+  ( l: Bytestring_vtype(l_len, l_offset, l_cap, l_ucap, l_refcnt, true, l_p)
   , r: !Bytestring_vtype(r_len, r_offset, r_cap, r_ucap, 0, r_dynamic, r_p)
   ):<!wrt>
-  Bytestring_vtype( l_len+r_len, l_offset, l_cap, l_ucap - r_len, l_refcnt, l_dynamic, l_p)
+  Bytestring_vtype( l_len+r_len, l_offset, l_cap, l_ucap - r_len, l_refcnt, true, l_p)
 
 (* returns the capacity of the given bytestring *)
 (* O(1)
@@ -752,12 +752,25 @@ fn
   ( i: BytestringNSH1
   ): void
 
+(* be aware: statically allocated bytestring should not be modified or you will get the segfault. At the moment, ATS does not split read/write access, so I have to name functions accordingly in order to attract your attention *)
 (* O(1)
  *)
 fn
-  bs2bytes
+  bs2bytes_ro
   {len,offset,cap,ucap,refcnt: nat | cap > 0; len > 0}{dynamic:bool}{l:agz}
   ( i: !Bytestring_vtype(len,offset,cap,ucap,refcnt,dynamic,l) >> minus_vt( Bytestring_vtype(len,offset,cap,ucap,refcnt,dynamic,l), array_v(char, l+offset*sizeof(char), len))
+  ):<>
+  [ l+offset*sizeof(char) > null]
+  ( array_v(char, l+offset*sizeof(char), len)
+  | ptr (l+offset*sizeof(char))
+  , size_t(len)
+  )
+(* O(1)
+ *)
+fn
+  bs2bytes_rw
+  {len,offset,cap,ucap,refcnt: nat | cap > 0; len > 0}{l:agz}
+  ( i: !Bytestring_vtype(len,offset,cap,ucap,refcnt,true,l) >> minus_vt( Bytestring_vtype(len,offset,cap,ucap,refcnt,true,l), array_v(char, l+offset*sizeof(char), len))
   ):<>
   [ l+offset*sizeof(char) > null]
   ( array_v(char, l+offset*sizeof(char), len)
@@ -775,11 +788,24 @@ praxi
   ):<>
   void
 
+(* be aware: statically allocated bytestring should not be modified or you will get the segfault. At the moment, ATS does not split read/write access, so I have to name functions accordingly in order to attract your attention *)
 (* O(1) *)
 fn
-  bs2unused_bytes
+  bs2unused_bytes_ro
   {len,offset,cap,refcnt: nat | cap - offset - len > 0}{dynamic:bool}{l:agz}
   ( i: !Bytestring_vtype(len,offset,cap,cap - offset - len,refcnt,dynamic,l) >> minus_vt( Bytestring_vtype(len,offset,cap,cap - offset - len,refcnt,dynamic,l), array_v(char, l+(offset+len)*sizeof(char), cap - offset - len))
+  ):<>
+  [ (l + (offset+len)*sizeof(char)) > null]
+  ( array_v(char, l+(offset+len)*sizeof(char), cap - offset - len)
+  | ptr (l+(offset+len)*sizeof(char))
+  , size_t(cap - offset - len)
+  )
+
+(* O(1) *)
+fn
+  bs2unused_bytes_rw
+  {len,offset,cap,refcnt: nat | cap - offset - len > 0}{l:agz}
+  ( i: !Bytestring_vtype(len,offset,cap,cap - offset - len,refcnt,true,l) >> minus_vt( Bytestring_vtype(len,offset,cap,cap - offset - len,refcnt,true,l), array_v(char, l+(offset+len)*sizeof(char), cap - offset - len))
   ):<>
   [ (l + (offset+len)*sizeof(char)) > null]
   ( array_v(char, l+(offset+len)*sizeof(char), cap - offset - len)

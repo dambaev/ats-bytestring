@@ -360,9 +360,9 @@ in
   res where {
     var res: BytestringNSH0?
     val () = res := create( l_len + r_len)
-    val (res_pf | res_ptr, res_sz) = bs2unused_bytes( res )
+    val (res_pf | res_ptr, res_sz) = bs2unused_bytes_rw( res )
     prval (res_pf1, res_pf2) = array_v_split_at( res_pf | l_len)
-    val (l_pf | l_ptr, l_len) = bs2bytes( l )
+    val (l_pf | l_ptr, l_len) = bs2bytes_ro( l )
 
     val () = memcpy( res_pf1, l_pf | res_ptr, l_ptr, l_len)
     
@@ -370,7 +370,7 @@ in
     
     val res_ptr = ptr1_add_sz<char>( res_ptr, l_len)
     
-    val (r_pf | r_ptr, r_len) = bs2bytes( r)
+    val (r_pf | r_ptr, r_len) = bs2bytes_ro( r)
     
     val () = memcpy( res_pf2, r_pf | res_ptr, r_ptr, r_len)
   
@@ -554,7 +554,7 @@ implement eprintlnC(i) = {
   val () = free( i)
 }
 
-implement bs2bytes{n,offset,cap,ucap,refcnt}{dynamic}{l}(i) = ret where {
+implement bs2bytes_ro{n,offset,cap,ucap,refcnt}{dynamic}{l}(i) = ret where {
   prval () = lemma_bytestring_param(i)
   val (rpf | impl) = bs_takeout_struct(i)
   val (len, offset, cap, dynamic, p) = impl
@@ -572,8 +572,9 @@ implement bs2bytes{n,offset,cap,ucap,refcnt}{dynamic}{l}(i) = ret where {
     ): ( array_v(char, l1, n))
   val ret = ( believeme(i, ptr) | ptr, len)
 }
+implement bs2bytes_rw(i) = bs2bytes_ro i
 
-implement bs2unused_bytes{n,offset,cap,refcnt}{dynamic}{l}(i) = ret where {
+implement bs2unused_bytes_ro{n,offset,cap,refcnt}{dynamic}{l}(i) = ret where {
   prval () = lemma_bytestring_param(i)
   val (rpf | impl) = bs_takeout_struct(i)
   val (len, offset, cap, dynamic, p) = impl
@@ -590,6 +591,7 @@ implement bs2unused_bytes{n,offset,cap,refcnt}{dynamic}{l}(i) = ret where {
     ): ( array_v(char,l+(offset+n)*sizeof(char),cap - offset - n))
   val ret = ( believeme(i, ptr) | ptr, cap - offset - len)
 }
+implement bs2unused_bytes_rw(i) = bs2unused_bytes_ro i
 
 implement unused_bytes_addback{len,offset,cap,ucap,refcnt,used_bytes}{dynamic}{l}( pf | i, used_bytes) = {
   extern prfun
@@ -608,8 +610,8 @@ implement growC(l, r) = vl where {
   prval () = lemma_bytestring_param( r)
   var vl: Bytestring0?
   val () = vl := l
-  val ( l_pf | l_ptr, l_sz) = bs2unused_bytes( vl)
-  val ( r_pf | r_ptr, r_len) = bs2bytes( r)
+  val ( l_pf | l_ptr, l_sz) = bs2unused_bytes_rw( vl)
+  val ( r_pf | r_ptr, r_len) = bs2bytes_ro( r)
 
   val () = memcpy( l_pf, r_pf | l_ptr, r_ptr, r_len) (* now actually copy memory *)
   
@@ -625,8 +627,8 @@ implement grow_bsC_bs(l, r) = vl where {
   prval () = lemma_bytestring_param( r)
   var vl: Bytestring0?
   val () = vl := l
-  val ( l_pf | l_ptr, l_sz) = bs2unused_bytes( vl)
-  val ( r_pf | r_ptr, r_len) = bs2bytes( r)
+  val ( l_pf | l_ptr, l_sz) = bs2unused_bytes_rw( vl)
+  val ( r_pf | r_ptr, r_len) = bs2bytes_ro( r)
 
   val () = memcpy( l_pf, r_pf | l_ptr, r_ptr, r_len) (* now actually copy memory *)
 
@@ -742,7 +744,7 @@ let
   prval () = lemma_bytestring_param( i)
 in
   result where {
-    val ( i_pf | i_p, i_sz) = bs2bytes( i)
+    val ( i_pf | i_p, i_sz) = bs2bytes_ro( i)
     val ( pf, fpf | p) = array_ptr_alloc<char>(i_sz)
     val () = memcpy( pf, i_pf | p, i_p, i_sz)
     prval () = bytes_addback( i_pf | i)
@@ -760,8 +762,8 @@ in
   else result where {
     var result: BytestringNSH0?
     val () = result := create (sz + 1)
-    val ( r_pf | r_ptr, r_sz) = bs2unused_bytes( result)
-    val ( l_pf | l_ptr, l_sz) = bs2bytes( l)
+    val ( r_pf | r_ptr, r_sz) = bs2unused_bytes_rw( result)
+    val ( l_pf | l_ptr, l_sz) = bs2bytes_ro( l)
     val () = array_set_at_guint<char>( !r_ptr, i2sz 0, a)
     prval (pf1, pf2) = array_v_split_at( r_pf | i2sz 1)
     val r_ptr1 = ptr1_add_sz<char>( r_ptr, i2sz 1)
@@ -781,8 +783,8 @@ in
   else result where {
     var result: BytestringNSH0?
     val () = result := create (sz + 1)
-    val ( r_pf | r_ptr, r_sz) = bs2unused_bytes( result)
-    val ( l_pf | l_ptr, l_sz) = bs2bytes( l)
+    val ( r_pf | r_ptr, r_sz) = bs2unused_bytes_rw( result)
+    val ( l_pf | l_ptr, l_sz) = bs2bytes_ro( l)
     val () = memcpy{char}{char}( r_pf, l_pf | r_ptr, l_ptr, l_sz) (* copy l into result *)
     (* now result[l_sz] should have value of a *)
     val () = array_set_at_guint( !r_ptr, sz, a)
@@ -804,7 +806,7 @@ implement appendC_char_bs(a, l) = result where {
 implement pack_char(a) = result where {
   var result: BytestringNSH0?
   val () = result := create (i2sz 1)
-  val ( r_pf | r_ptr, r_sz) = bs2unused_bytes( result)
+  val ( r_pf | r_ptr, r_sz) = bs2unused_bytes_rw( result)
   (* now result[l_sz] should have value of a *)
   val () = array_set_at_guint( !r_ptr, i2sz 0, a)
   val () = unused_bytes_addback( r_pf | result, i2sz 1)
@@ -830,13 +832,13 @@ let
     }
   }
   var format_bs = create(length PRI_fmt_bs + 2) ++ $BS.pack '%' ++ PRI_fmt_bs
-  val (fmt_pf | fmt_p, fmt_sz) = bs2unused_bytes( format_bs)
+  val (fmt_pf | fmt_p, fmt_sz) = bs2unused_bytes_rw( format_bs)
   val () = array_set_at_guint( !fmt_p, i2sz 0, $UN.cast{char} 0)
   val () = unused_bytes_addback( fmt_pf | format_bs, i2sz 0)
-  val ( format_pf | format_p, _) = $BS.bs2bytes( format_bs)
+  val ( format_pf | format_p, _) = $BS.bs2bytes_rw( format_bs)
   var bs: BytestringNSH0?
   val () = bs := $BS.create(i2sz 21) // -9223372036854775807 - min int64 value + NULL
-  val (pf | p, sz) = $BS.bs2unused_bytes( bs)
+  val (pf | p, sz) = $BS.bs2unused_bytes_rw( bs)
   val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 21, format_p, i))
   prval () = $BS.bytes_addback( format_pf | format_bs)
   val () = free format_bs
@@ -864,13 +866,13 @@ let
     }
   }
   var format_bs = create(length PRI_fmt_bs + 2) ++ $BS.pack '%' ++ PRI_fmt_bs
-  val (fmt_pf | fmt_p, fmt_sz) = bs2unused_bytes( format_bs)
+  val (fmt_pf | fmt_p, fmt_sz) = bs2unused_bytes_rw( format_bs)
   val () = array_set_at_guint( !fmt_p, i2sz 0, $UN.cast{char} 0)
   val () = unused_bytes_addback( fmt_pf | format_bs, i2sz 0)
-  val ( format_pf | format_p, _) = $BS.bs2bytes( format_bs)
+  val ( format_pf | format_p, _) = $BS.bs2bytes_rw( format_bs)
   var bs: BytestringNSH0?
   val () = bs := $BS.create(i2sz 21) // 18,446,744,073,709,551,615 - max int64 value + NULL
-  val (pf | p, sz) = $BS.bs2unused_bytes( bs)
+  val (pf | p, sz) = $BS.bs2unused_bytes_rw( bs)
   val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 21, format_p, i))
   prval () = $BS.bytes_addback( format_pf | format_bs)
   val () = free format_bs
@@ -898,13 +900,13 @@ let
     }
   }
   var format_bs = create(length PRI_fmt_bs + 2) ++ $BS.pack '%' ++ PRI_fmt_bs
-  val (fmt_pf | fmt_p, fmt_sz) = bs2unused_bytes( format_bs)
+  val (fmt_pf | fmt_p, fmt_sz) = bs2unused_bytes_rw( format_bs)
   val () = array_set_at_guint( !fmt_p, i2sz 0, $UN.cast{char} 0)
   val () = unused_bytes_addback( fmt_pf | format_bs, i2sz 0)
-  val ( format_pf | format_p, _) = $BS.bs2bytes( format_bs)
+  val ( format_pf | format_p, _) = $BS.bs2bytes_rw( format_bs)
   var bs: BytestringNSH0?
   val () = bs := $BS.create(i2sz 12) // -2,147,483,647 - min int32 value + NULL
-  val (pf | p, sz) = $BS.bs2unused_bytes( bs)
+  val (pf | p, sz) = $BS.bs2unused_bytes_rw( bs)
   val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 12, format_p, i))
   prval () = $BS.bytes_addback( format_pf | format_bs)
   val () = free format_bs
@@ -932,13 +934,13 @@ let
     }
   }
   var format_bs = create(length PRI_fmt_bs + 2) ++ $BS.pack '%' ++ PRI_fmt_bs
-  val (fmt_pf | fmt_p, fmt_sz) = bs2unused_bytes( format_bs)
+  val (fmt_pf | fmt_p, fmt_sz) = bs2unused_bytes_rw( format_bs)
   val () = array_set_at_guint( !fmt_p, i2sz 0, $UN.cast{char} 0)
   val () = unused_bytes_addback( fmt_pf | format_bs, i2sz 0)
-  val ( format_pf | format_p, _) = $BS.bs2bytes( format_bs)
+  val ( format_pf | format_p, _) = $BS.bs2bytes_rw( format_bs)
   var bs: BytestringNSH0?
   val () = bs := $BS.create(i2sz 11) // 4294967295 - max int32 value + NULL
-  val (pf | p, sz) = $BS.bs2unused_bytes( bs)
+  val (pf | p, sz) = $BS.bs2unused_bytes_rw( bs)
   val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 11, format_p, i))
   prval () = $BS.bytes_addback( format_pf | format_bs)
   val () = free format_bs
@@ -960,7 +962,7 @@ implement pack_double(i) =
 let
   var bs: BytestringNSH0?
   val () = bs := $BS.create(i2sz 48) // hard to guess, as depending on platform size in range of 80-128 bits, so the size is quite random
-  val (pf | p, sz) = $BS.bs2unused_bytes( bs)
+  val (pf | p, sz) = $BS.bs2unused_bytes_rw( bs)
   val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 48, "%f\0", i))
 in
   ifcase
@@ -980,7 +982,7 @@ implement pack_float(i) =
 let
   var bs: BytestringNSH0?
   val () = bs := $BS.create(i2sz 48) // hard to guess, as depending on platform size in range of 80-128 bits, so the size is quite random
-  val (pf | p, sz) = $BS.bs2unused_bytes( bs)
+  val (pf | p, sz) = $BS.bs2unused_bytes_rw( bs)
   val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 48, "%f\0", i))
 in
   ifcase
@@ -1006,13 +1008,13 @@ let
     }
   }
   var format_bs = create(length PRI_fmt_bs + 2) ++ $BS.pack '%' ++ PRI_fmt_bs
-  val (fmt_pf | fmt_p, fmt_sz) = bs2unused_bytes( format_bs)
+  val (fmt_pf | fmt_p, fmt_sz) = bs2unused_bytes_rw( format_bs)
   val () = array_set_at_guint( !fmt_p, i2sz 0, $UN.cast{char} 0)
   val () = unused_bytes_addback( fmt_pf | format_bs, i2sz 0)
-  val ( format_pf | format_p, _) = $BS.bs2bytes( format_bs)
+  val ( format_pf | format_p, _) = $BS.bs2bytes_rw( format_bs)
   var bs: BytestringNSH0?
   val () = bs := $BS.create(i2sz 5) // -127 - min int8 value + NULL
-  val (pf | p, sz) = $BS.bs2unused_bytes( bs)
+  val (pf | p, sz) = $BS.bs2unused_bytes_rw( bs)
   val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 5, format_p, i))
   prval () = $BS.bytes_addback( format_pf | format_bs)
   val () = free format_bs
@@ -1040,13 +1042,13 @@ let
     }
   }
   var format_bs = create(length PRI_fmt_bs + 2) ++ $BS.pack '%' ++ PRI_fmt_bs
-  val (fmt_pf | fmt_p, fmt_sz) = bs2unused_bytes( format_bs)
+  val (fmt_pf | fmt_p, fmt_sz) = bs2unused_bytes_rw( format_bs)
   val () = array_set_at_guint( !fmt_p, i2sz 0, $UN.cast{char} 0)
   val () = unused_bytes_addback( fmt_pf | format_bs, i2sz 0)
-  val ( format_pf | format_p, _) = $BS.bs2bytes( format_bs)
+  val ( format_pf | format_p, _) = $BS.bs2bytes_rw( format_bs)
   var bs: BytestringNSH0?
   val () = bs := $BS.create(i2sz 4) // 255 - max int8 value + NULL
-  val (pf | p, sz) = $BS.bs2unused_bytes( bs)
+  val (pf | p, sz) = $BS.bs2unused_bytes_rw( bs)
   val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 4, format_p, i))
   prval () = $BS.bytes_addback( format_pf | format_bs)
   val () = free format_bs
@@ -1074,13 +1076,13 @@ let
     }
   }
   var format_bs = create(length PRI_fmt_bs + 2) ++ $BS.pack '%' ++ PRI_fmt_bs
-  val (fmt_pf | fmt_p, fmt_sz) = bs2unused_bytes( format_bs)
+  val (fmt_pf | fmt_p, fmt_sz) = bs2unused_bytes_rw( format_bs)
   val () = array_set_at_guint( !fmt_p, i2sz 0, $UN.cast{char} 0)
   val () = unused_bytes_addback( fmt_pf | format_bs, i2sz 0)
-  val ( format_pf | format_p, _) = $BS.bs2bytes( format_bs)
+  val ( format_pf | format_p, _) = $BS.bs2bytes_rw( format_bs)
   var bs: BytestringNSH0?
   val () = bs := $BS.create(i2sz 7) // -32678 - min int32 value + NULL
-  val (pf | p, sz) = $BS.bs2unused_bytes( bs)
+  val (pf | p, sz) = $BS.bs2unused_bytes_rw( bs)
   val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 7, format_p, i))
   prval () = $BS.bytes_addback( format_pf | format_bs)
   val () = free format_bs
@@ -1108,13 +1110,13 @@ let
     }
   }
   var format_bs = create(length PRI_fmt_bs + 2) ++ $BS.pack '%' ++ PRI_fmt_bs
-  val (fmt_pf | fmt_p, fmt_sz) = bs2unused_bytes( format_bs)
+  val (fmt_pf | fmt_p, fmt_sz) = bs2unused_bytes_rw( format_bs)
   val () = array_set_at_guint( !fmt_p, i2sz 0, $UN.cast{char} 0)
   val () = unused_bytes_addback( fmt_pf | format_bs, i2sz 0)
-  val ( format_pf | format_p, _) = $BS.bs2bytes( format_bs)
+  val ( format_pf | format_p, _) = $BS.bs2bytes_rw( format_bs)
   var bs: BytestringNSH0?
   val () = bs := $BS.create(i2sz 6) // 65535 - max int32 value + NULL
-  val (pf | p, sz) = $BS.bs2unused_bytes( bs)
+  val (pf | p, sz) = $BS.bs2unused_bytes_rw( bs)
   val (rendered:(int)) = g1ofg0( $extfcall( int, "snprintf", p, i2sz 6, format_p, i))
   prval () = $BS.bytes_addback( format_pf | format_bs)
   val () = free format_bs
@@ -1139,7 +1141,7 @@ implement parse_uint32( i) = result where {
   val result =
     ( if isnot_empty digits
     then result where {
-      val (pf | p, sz) = bs2bytes( digits)
+      val (pf | p, sz) = bs2bytes_ro( digits)
       val v = $extfcall(uint32, "atol", p)
       prval _ = bytes_addback( pf | digits)
       val () = free( digits, i)
@@ -1160,8 +1162,8 @@ implement reverse{len,offset,cap,ucap,refcnt}{dynamic}( i) = result where {
   val i_sz = length i
   var result: BytestringNSH0?
   val () = result := create( i_sz)
-  val (r_pf | r_p, r_sz) = bs2unused_bytes( result)
-  val (i_pf | i_p, i_sz) = bs2bytes( i)
+  val (r_pf | r_p, r_sz) = bs2unused_bytes_rw( result)
+  val (i_pf | i_p, i_sz) = bs2bytes_ro( i)
   val () = loop( r_pf, i_pf | i2sz 0, r_p, i_p) where {
     fun
       loop
@@ -1188,7 +1190,7 @@ implement reverseC{len,offset,cap,ucap}{dynamic}( i) = i where {
   prval () = lemma_bytestring_param i
   val i_sz = length i
   val half_i_sz = i_sz / (i2sz 2)
-  val (i_pf | i_p, i_sz) = bs2bytes( i)
+  val (i_pf | i_p, i_sz) = bs2bytes_ro( i)
   val () = loop( i_pf | i2sz 0, i_p) where {
     fun
       loop
