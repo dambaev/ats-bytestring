@@ -318,8 +318,8 @@ fn
   pack_bool
   ( i: bool
   ):<!wrt>
-  [len,cap:pos | cap >= len][ucap:nat][l:addr | l > null]
-  Bytestring_vtype( len, 0, cap, ucap, 0, true, l)
+  [len,cap:pos | cap >= len][l:agz]
+  Bytestring_vtype( len, 0, cap, 0, 0, false, l)
 overload pack with pack_bool
 
 (* O(1)

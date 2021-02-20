@@ -1319,3 +1319,8 @@ in
     prval () = opt_unnone( idx)
   }
 end
+
+implement pack_bool( i) =
+if i
+then $BS.pack "true"
+else $BS.pack "false"
