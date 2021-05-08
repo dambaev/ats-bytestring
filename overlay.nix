@@ -1,3 +1,1 @@
-self: super: {
-  ats-bytestring = self.callPackage ./derivation.nix {};
-}
+self: super: import ./overlay-set.nix
