@@ -395,7 +395,7 @@ fn
   ( l: !Bytestring_vtype( l_len, l_offset, l_cap, l_ucap, l_refcnt, l_dynamic, l_p)
   , r: Bytestring_vtype( r_len, r_offset, r_cap, r_ucap, 0, r_dynamic, r_p)
   ):<!wrt>
-  [r: bool | (l_len == r_len && r ) || (l_len != r_len || r == false)]
+  [r: bool | (l_len == r_len && r == true) || r == false]
   bool(r)
 
 (* returns true only if content if 'l' is the same as content of 'r'. Do not consumes anything *)
@@ -409,7 +409,7 @@ fn
   ( l: !Bytestring_vtype( l_len, l_offset, l_cap, l_ucap, l_refcnt, l_dynamic, l_p)
   , r: !Bytestring_vtype( r_len, r_offset, r_cap, r_ucap, r_refcnt, r_dynamic, r_p)
   ):<>
-  [r: bool | (l_len == r_len && r ) || (l_len != r_len || r == false)]
+  [r: bool | (l_len == r_len && r == true ) || r == false]
   bool(r)
 
 (* returns true only if 'l' is not the same string (in terms of content) as 'r'. Consumes 'r'

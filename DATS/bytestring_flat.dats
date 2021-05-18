@@ -216,10 +216,6 @@ in
     prval () = bs_takeback_struct( r_rpf | r)
     prval () = bs_takeback_struct( l_rpf | l)
   }
-  | sizeof<char> <= 0 => false where {
-    prval () = bs_takeback_struct( r_rpf | r)
-    prval () = bs_takeback_struct( l_rpf | l)
-  }
   | _ => ret where {
     val r_ptr = ptr1_add_sz<char>( r_p, r_offset)
     val l_ptr = ptr1_add_sz<char>( l_p, l_offset)
