@@ -361,16 +361,17 @@ fn
 
 overload free with free_static_array
 
-(* consumes bytestring 'consume' and decreases reference count of the 'preserve' bytestring
+(* consumes bytestring 'consume' and transfers it's 'c_refcnt - 1' to the 'preserve' bytestring. This transferring allows for out of order freeing of bytestrings.
+  In case if c_refcnt is 1, it will decrease the refcnt of 'preserve' bytestring.
 *)
 (* O(1)
  *)
 fn
   unref_bs
-  {c_len,c_offset,cap,c_ucap: nat}{dynamic:bool}{l:addr}
+  {c_len,c_offset,cap,c_ucap, c_refcnt: nat | c_refcnt > 0}{dynamic:bool}{l:addr}
   {p_len,p_offset,p_ucap,p_refcnt: nat | p_refcnt > 0}
-  ( consume: Bytestring_vtype( c_len, c_offset, cap, c_ucap, 1, dynamic, l)
-  , preserve: !Bytestring_vtype( p_len, p_offset, cap, p_ucap, p_refcnt, dynamic, l) >> Bytestring_vtype( p_len, p_offset, cap, p_ucap, p_refcnt - 1, dynamic, l)
+  ( consume: Bytestring_vtype( c_len, c_offset, cap, c_ucap, c_refcnt, dynamic, l)
+  , preserve: !Bytestring_vtype( p_len, p_offset, cap, p_ucap, p_refcnt, dynamic, l) >> Bytestring_vtype( p_len, p_offset, cap, p_ucap, p_refcnt + c_refcnt - 2, dynamic, l)
   ):<!wrt>
   void
 overload free with unref_bs

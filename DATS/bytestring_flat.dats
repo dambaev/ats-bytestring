@@ -318,7 +318,10 @@ implement length_bs(i) = len where {
   prval () = bs_takeback_struct( rpf | i)
 }
 
-implement unref_bs( r, o) = {
+implement unref_bs
+  {c_len,c_offset,cap,c_ucap, c_refcnt}{dynamic}{l}
+  {p_len,p_offset,p_ucap,p_refcnt}
+  ( r, o) = {
   extern castfn
     explode
     {n,offset,cap,ucap,refcnt:nat}{dynamic:bool}{l:addr}
@@ -328,7 +331,9 @@ implement unref_bs( r, o) = {
   prval () = lemma_bytestring_param( r)
   prval () = lemma_bytestring_param( o)
   val _ = explode( r) (* we know, that r is just reference to o. r should not survive and o should survive *)
-  prval () = bs_decref( o, 1)
+  prval () = believeme( o) where { (* transfer refcnounts > 1 to preserved one *)
+    extern praxi believeme( o: !Bytestring_vtype( p_len, p_offset, cap, p_ucap, p_refcnt, dynamic, l) >> Bytestring_vtype( p_len, p_offset, cap, p_ucap, p_refcnt + (c_refcnt - 2), dynamic, l)): void
+  }
 }
 
 extern fn
